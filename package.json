@@ -1,0 +1,17 @@
+{
+  "name": "taskcluster-scripts",
+  "version": "1.0.0",
+  "description": "Administrative scripts for TaskCluster administrators",
+  "main": "index.js",
+  "bin": {
+    "tcadmin": "./index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/taskcluster/taskcluster-scripts.git"
+  },
+  "license": "MPL-2.0",
+  "dependencies": {
+    "commander": "^2.9.0"
+  }
+}
