@@ -6,6 +6,9 @@
   "bin": {
     "tcadmin": "./index.js"
   },
+  "scripts": {
+    "tcadmin": "node index.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/taskcluster/taskcluster-admin.git"
