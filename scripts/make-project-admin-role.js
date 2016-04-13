@@ -27,6 +27,8 @@ function run(project) {
     'hooks:modify-hook:project-<project>/*',
     'project:<project>:*',
     'queue:get-artifact:project/<project>/*',
+    'queue:route:index.project.<project>.*',
+    'index:insert-task:project.<project>.*',
     'secrets:get:project/<project>/*',
     'secrets:set:project/<project>/*',
   ].map((scope) => scope.replace('<project>', project));
