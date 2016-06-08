@@ -21,6 +21,7 @@ function run(path, project, level) {
     'queue:route:index.gecko.v2.<project>.*',
     'queue:route:tc-treeherder-stage.<project>.*',
     'queue:route:tc-treeherder.<project>.*',
+    'queue:route:coalesce.v1.builds.<project>.*',
   ].map((scope) =>
     scope
     .replace('<project>', project)
