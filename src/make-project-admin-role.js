@@ -1,11 +1,10 @@
-module.exports = (program) => {
-  program
+module.exports.setup = (program) => {
+  return program
     .command('make-project-admin-role <project>')
-    .description('create or update a project-admin role')
-    .action(run);
+    .description('create or update a project-admin role');
 };
 
-function run(project) {
+module.exports.run = function(project) {
   var taskcluster = require('taskcluster-client');
   var chalk = require('chalk');
   var auth = new taskcluster.Auth();

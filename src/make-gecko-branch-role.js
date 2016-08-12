@@ -1,11 +1,10 @@
-module.exports = (program) => {
-  program
+module.exports.setup = (program) => {
+  return program
     .command('make-gecko-branch-role <path> <project> <level>')
-    .description('create or update a gecko branch role (repo:hg.mozilla.org/<path>:*)')
-    .action(run);
+    .description('create or update a gecko branch role (repo:hg.mozilla.org/<path>:*)');
 };
 
-function run(path, project, level) {
+module.exports.run = function(path, project, level) {
   var taskcluster = require('taskcluster-client');
   var chalk = require('chalk');
   var auth = new taskcluster.Auth();

@@ -6,11 +6,22 @@ var program = require('commander');
 
 // global options
 program
-  .version(require('./package.json').version)
+  .version(require('../package.json').version)
 
 // allow each subcommand to set up
-fs.readdirSync(path.join(__dirname, 'scripts')).forEach((f) => {
-  require('./scripts/' + f)(program);
+fs.readdirSync(__dirname).forEach((f) => {
+  if (f.endsWith('.js') && f !== "index.js") {
+    var script = require('./' + f)
+    script.setup(program).action(function() {
+      var p = script.run.apply(script, arguments);
+      if (p) {
+        p.catch((err) => {
+          console.error(err);
+          process.exit(1);
+        });
+      }
+    });
+  }
 });
 
 // default to showing help
