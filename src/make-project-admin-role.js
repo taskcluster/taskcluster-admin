@@ -4,7 +4,7 @@ module.exports.setup = (program) => {
     .description('create or update a project-admin role');
 };
 
-module.exports.run = function(project) {
+module.exports.run = async (project) => {
   var taskcluster = require('taskcluster-client');
   var chalk = require('chalk');
   var auth = new taskcluster.Auth();
@@ -32,30 +32,30 @@ module.exports.run = function(project) {
     'secrets:set:project/<project>/*',
   ].map((scope) => scope.replace('<project>', project));
 
-  auth.role(roleId).catch((err) => {
-    if (err.statusCode == 404) {
-      return;
+  var description = [
+    '*DO NOT EDIT*',
+    '',
+    'Project administrative scopes for ' + project,
+    '',
+    'This role is configured automatically by [taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).',
+  ].join('\n');
+
+  var role;
+  try {
+    role = await auth.role(roleId);
+  } catch (err) {
+    if (err.statusCode !== 404) {
+      throw err;
     }
-    throw err;
-  }).then((role) => {
-    if (role) {
-      console.log(chalk.green.bold('updating role'));
-      return auth.updateRole(roleId, {
-        description: role.description,
-        scopes,
-      });
-    } else {
-      console.log(chalk.green.bold('creating role'));
-      return auth.createRole(roleId, {
-        description: 'Project administrative scopes for ' + project,
-        scopes,
-      });
-    }
-  }).then(() => {
-    console.log(chalk.green.bold('done'));
-  }).catch((err) => {
-    console.log(err);
-    process.exit(1);
-  });
+  }
+  if (role) {
+    console.log(chalk.green.bold('updating role'));
+    await auth.updateRole(roleId, {description, scopes});
+  } else {
+    console.log(chalk.green.bold('creating role'));
+    await auth.createRole(roleId, {description, scopes});
+  }
+
+  console.log(chalk.green.bold('done'));
 };
 
