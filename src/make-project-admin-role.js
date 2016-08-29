@@ -24,6 +24,7 @@ module.exports.run = async (project) => {
     'auth:update-role:hook-id:project-<project>/*',
     'auth:update-role:project:<project>:*',
     'hooks:modify-hook:project-<project>/*',
+    'hooks:trigger-hook:project-<project>/*',
     'project:<project>:*',
     'queue:get-artifact:project/<project>/*',
     'queue:route:index.project.<project>.*',
