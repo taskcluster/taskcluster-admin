@@ -22,6 +22,7 @@
     "taskcluster-client": "^0.23.13"
   },
   "devDependencies": {
-    "babel-compile": "^2.0.0"
+    "babel-compile": "^2.0.0",
+    "babel-preset-taskcluster": "^3.0.0"
   }
 }
