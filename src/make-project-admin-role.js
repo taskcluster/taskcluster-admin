@@ -11,6 +11,7 @@ module.exports.run = async (project) => {
 
   var roleId = 'project-admin:' + project;
   var scopes = [
+    'assume:hook-id:project-<project>/*',
     'auth:create-client:project/<project>/*',
     'auth:create-role:hook-id:project-<project>/*',
     'auth:create-role:project:<project>:*',
