@@ -12,7 +12,8 @@ module.exports.setup = (program) => {
     .command('update-worker-amis [workerTypes...]')
     .description('update one or more workerTypes, replacing AMI IDs as given in the options')
     .option('-r, --replace [ami-OLD:ami-NEW]', 'Replace AMI ID ami-OLD with ami_NEW', replace, [])
-    .option('--all', 'Operate on all workerTypes');
+    .option('--all', 'Operate on all workerTypes')
+    .option('--noop', 'Do not write back changes');
 };
 
 module.exports.run = async function(workerTypesOption, options) {
@@ -42,7 +43,7 @@ module.exports.run = async function(workerTypesOption, options) {
       });
     });
 
-    if (changed) {
+    if (changed && !options.noop) {
       console.log(chalk.red("writing back"));
       delete wtDef['workerType'];
       delete wtDef['lastModified'];
