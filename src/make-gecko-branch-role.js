@@ -5,6 +5,14 @@ module.exports.setup = (program) => {
     .description('create or update a gecko branch role (repo:hg.mozilla.org/<path>:*)');
 };
 
+var description = path => [
+  '*DO NOT EDIT*',
+  '',
+  `Scopes for tasks triggered from pushes to https://hg.mozilla.org/${path}`,
+  '',
+  'This role is configured automatically by [taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).',
+].join('\n');
+
 module.exports.run = async function(path, project, level, options) {
   var taskcluster = require('taskcluster-client');
   var chalk = require('chalk');
@@ -56,13 +64,13 @@ module.exports.run = async function(path, project, level, options) {
       if (role) {
         console.log(chalk.green.bold('updating role'));
         await auth.updateRole(roleId, {
-          description: role.description,
+          description: description(path),
           scopes,
         });
       } else {
         console.log(chalk.green.bold('creating role'));
         await auth.createRole(roleId, {
-          description: 'Scopes for tasks triggered from https://hg.mozilla.org/' + path,
+          description: description(path),
           scopes,
         });
       }
