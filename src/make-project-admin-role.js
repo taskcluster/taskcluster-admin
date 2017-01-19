@@ -1,10 +1,13 @@
+import editRole from './util/edit-role';
+
 module.exports.setup = (program) => {
   return program
     .command('make-project-admin-role <project>')
+    .option('-n, --noop', 'Don\'t change roles, just show difference')
     .description('create or update a project-admin role');
 };
 
-module.exports.run = async (project) => {
+module.exports.run = async (project, options) => {
   var taskcluster = require('taskcluster-client');
   var chalk = require('chalk');
   var auth = new taskcluster.Auth();
@@ -43,22 +46,11 @@ module.exports.run = async (project) => {
     'This role is configured automatically by [taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).',
   ].join('\n');
 
-  var role;
-  try {
-    role = await auth.role(roleId);
-  } catch (err) {
-    if (err.statusCode !== 404) {
-      throw err;
-    }
-  }
-  if (role) {
-    console.log(chalk.green.bold('updating role'));
-    await auth.updateRole(roleId, {description, scopes});
-  } else {
-    console.log(chalk.green.bold('creating role'));
-    await auth.createRole(roleId, {description, scopes});
-  }
-
-  console.log(chalk.green.bold('done'));
+  await editRole({
+    roleId,
+    description,
+    scopes,
+    noop: options.noop,
+  });
 };
 
