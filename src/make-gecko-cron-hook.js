@@ -58,7 +58,7 @@ module.exports.run = async function(path, project, level, options) {
         env: {
           GECKO_BASE_REPOSITORY: 'https://hg.mozilla.org/mozilla-unified',
           GECKO_HEAD_REPOSITORY: `https://hg.mozilla.org/${path}`,
-          GECKO_HEAD_REF: 'tip',
+          GECKO_HEAD_REF: 'default',
           HG_STORE_PATH: '/home/worker/checkouts/hg-store'
         },
         cache: {}, // see below
