@@ -16,7 +16,7 @@ module.exports.run = async function(path, project, level, options) {
   var chalk = require('chalk');
 
   var hookGroupId = 'project-releng';
-  var hookId = `cron-task-${path.replace('/', '-')}`;
+  var hookId = `cron-task-${path.replace(/\//g, '-')}`;
 
   // set up role
 
@@ -45,8 +45,8 @@ module.exports.run = async function(path, project, level, options) {
         '',
         'This hook is configured automatically by [taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).',
       ].join('\n'),
-      owner: 'mozilla-taskcluster-maintenance@mozilla.com',
-      emailOnError: true
+      owner: 'dustin@mozilla.com',
+      emailOnError: false
     },
     task: {
       provisionerId: 'aws-provisioner-v1',
