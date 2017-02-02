@@ -18,7 +18,6 @@ module.exports.run = async function(path, project, level, options) {
     'queue:route:index.buildbot.branches.<project>.*',
     'queue:route:index.buildbot.revisions.*',
     'queue:route:index.docker.images.v1.<project>.*',
-    'queue:route:index.gecko.v1.<project>.*',
     'queue:route:index.gecko.v2.<project>.*',
     'queue:route:tc-treeherder-stage.<project>.*',
     'queue:route:tc-treeherder.<project>.*',
