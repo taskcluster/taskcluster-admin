@@ -100,8 +100,7 @@ module.exports.run = async function(path, project, level, options) {
       extra: {}
     },
     schedule: [
-      // TODO: enable :)
-      //"0 0,15,30,45 * * * *", // every 15 minutes
+      "0 0,15,30,45 * * * *", // every 15 minutes
     ],
     deadline: '1 hour',
     expires: '7 days'
