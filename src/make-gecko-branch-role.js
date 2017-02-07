@@ -12,7 +12,7 @@ module.exports.run = async function(path, project, level, options) {
   var chalk = require('chalk');
   var arrayDiff = require('simple-array-diff');
 
-  var roleId = 'repo:hg.mozilla.org/' + path + ':*';
+  var roleId = `repo:hg.mozilla.org/${path}:*`;
   var scopes = [
     'assume:moz-tree:level:<level>',
     'queue:route:index.buildbot.branches.<project>.*',
@@ -39,6 +39,34 @@ module.exports.run = async function(path, project, level, options) {
     'This role is configured automatically by [taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).',
   ].join('\n');
 
+  await editRole({
+    roleId,
+    description,
+    scopes,
+    noop: options.noop,
+  });
+
+  // nightly-specific scopes
+
+  roleId = `repo:hg.mozilla.org/${path}:cron:nightly-*`;
+  scopes = [
+    'assume:project:releng:nightly:level-<level>:<project>',
+  ].map((scope) =>
+    scope
+    .replace('<project>', project)
+    .replace('<level>', level)
+
+  );
+
+  description = [
+    '*DO NOT EDIT*',
+    '',
+    `Scopes for nighlty cron tasks triggered from pushes to https://hg.mozilla.org/${path}`,
+    '',
+    'This role is configured automatically by [taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).',
+  ].join('\n');
+
+  // edit the nightly-specific role
   await editRole({
     roleId,
     description,
