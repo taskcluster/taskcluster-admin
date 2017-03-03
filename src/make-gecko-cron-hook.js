@@ -1,3 +1,4 @@
+import {getProjects, hgmoPath, scmLevel} from './util/projects';
 import editRole from './util/edit-role';
 import chalk from 'chalk';
 import taskcluster from 'taskcluster-client';
@@ -5,15 +6,38 @@ import {diffLines} from 'diff';
 
 module.exports.setup = (program) => {
   return program
-    .command('make-gecko-cron-hook <path> <project> <level>')
+    .command('make-gecko-cron-hook <project>')
     .option('-n, --noop', 'Don\'t change roles, just show difference')
-    .description('create or update a hook and its role for running gecko cron jobs; path ' +
-                 'should be the portion after `hg.mozilla.org/`');
+    .description('create or update a hook and its role for running gecko cron jobs')
 };
 
-module.exports.run = async function(path, project, level, options) {
+module.exports.run = async function(projectName, options) {
   var taskcluster = require('taskcluster-client');
   var chalk = require('chalk');
+  var projects = await getProjects();
+
+  var project = projects[projectName];
+  if (!project) {
+    console.log(chalk.red(`Project ${projectName} is not defined in production-branches.json`));
+    process.exit(1);
+  }
+
+  if (!project.features['taskcluster-cron']) {
+    console.log(chalk.red(`Project ${projectName} does not have feature taskcluster-cron production-branches.json`));
+    process.exit(1);
+  }
+
+  var level = scmLevel(project);
+  if (!level) {
+    console.log(chalk.red(`Cannot determine project level`));
+    process.exit(1);
+  }
+
+  var path = hgmoPath(project);
+  if (!path) {
+    console.log(chalk.red(`Unrecognized project repository ${project.repo}`));
+    process.exit(1);
+  }
 
   var hookGroupId = 'project-releng';
   var hookId = `cron-task-${path.replace(/\//g, '-')}`;
@@ -78,7 +102,7 @@ module.exports.run = async function(path, project, level, options) {
             'cd /home/worker/checkouts/gecko',
             'ln -s /home/worker/artifacts artifacts',
             './mach --log-no-times taskgraph cron --base-repository=$GECKO_BASE_REPOSITORY --head-repository=$GECKO_HEAD_REPOSITORY ' +
-              `--head-ref=$GECKO_HEAD_REF --project=${project} --level=${level}`
+              `--head-ref=$GECKO_HEAD_REF --project=${projectName} --level=${level}`
           ].join(' && '),
         ],
         artifacts: {

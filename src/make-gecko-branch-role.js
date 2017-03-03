@@ -1,16 +1,36 @@
 import editRole from './util/edit-role';
+import {getProjects, hgmoPath, scmLevel} from './util/projects';
 
 module.exports.setup = (program) => {
   return program
-    .command('make-gecko-branch-role <path> <project> <level>')
+    .command('make-gecko-branch-role <project>')
     .option('-n, --noop', 'Don\'t change roles, just show difference')
-    .description('create or update a gecko branch role (repo:hg.mozilla.org/<path>:*)');
+    .description('create or update a gecko branch role');
 };
 
-module.exports.run = async function(path, project, level, options) {
+module.exports.run = async function(projectName, options) {
   var taskcluster = require('taskcluster-client');
   var chalk = require('chalk');
   var arrayDiff = require('simple-array-diff');
+  var projects = await getProjects();
+
+  var project = projects[projectName];
+  if (!project) {
+    console.log(chalk.red(`Project ${projectName} is not defined in production-branches.json`));
+    process.exit(1);
+  }
+
+  var level = scmLevel(project);
+  if (!level) {
+    console.log(chalk.red(`Cannot determine project level`));
+    process.exit(1);
+  }
+
+  var path = hgmoPath(project);
+  if (!path) {
+    console.log(chalk.red(`Unrecognized project repository ${project.repo}`));
+    process.exit(1);
+  }
 
   var roleId = `repo:hg.mozilla.org/${path}:*`;
   var scopes = [
@@ -26,7 +46,7 @@ module.exports.run = async function(path, project, level, options) {
     'queue:route:coalesce.v1.builds.<project>.*',
   ].map((scope) =>
     scope
-    .replace('<project>', project)
+    .replace('<project>', projectName)
     .replace('<level>', level)
 
   );
@@ -53,7 +73,7 @@ module.exports.run = async function(path, project, level, options) {
     'assume:project:releng:nightly:level-<level>:<project>',
   ].map((scope) =>
     scope
-    .replace('<project>', project)
+    .replace('<project>', projectName)
     .replace('<level>', level)
 
   );
