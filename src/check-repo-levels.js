@@ -7,7 +7,7 @@ module.exports.setup = (program) => {
     .description('check that the hg server and production-branches.json agree about repo levels. Must have an active Mozilla SSH key.');
 };
 
-module.exports.run = async (project, options) => {
+module.exports.run = async () => {
   let chalk = require('chalk');
   let projects = await getProjects();
   Object.keys(projects).forEach(p => {

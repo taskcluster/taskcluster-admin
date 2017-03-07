@@ -23,7 +23,7 @@ module.exports.run = async function(projectName, options) {
   }
 
   if (!project.features['taskcluster-cron']) {
-    console.log(chalk.red(`Project ${projectName} does not have feature taskcluster-cron production-branches.json`));
+    console.log(chalk.red(`Project ${projectName} does not have feature taskcluster-cron in production-branches.json`));
     process.exit(1);
   }
 
