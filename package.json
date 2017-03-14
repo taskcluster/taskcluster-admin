@@ -23,7 +23,7 @@
     "lodash": "^4.16.4",
     "simple-array-diff": "^1.1.0",
     "superagent": "^3.5.0",
-    "taskcluster-client": "^0.23.13"
+    "taskcluster-client": "^2.1.0"
   },
   "devDependencies": {
     "babel-compile": "^2.0.0",
