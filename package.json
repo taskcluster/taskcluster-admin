@@ -28,5 +28,10 @@
   "devDependencies": {
     "babel-compile": "^2.0.0",
     "babel-preset-taskcluster": "^3.0.0"
+  },
+  "engine-strict": true,
+  "engines": {
+    "node": "7.4.0",
+    "yarn": "0.21.3"
   }
 }
