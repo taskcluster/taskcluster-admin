@@ -1,7 +1,6 @@
 import request from 'superagent';
 
-// TODO use real, when it's landed
-const PRODUCTION_BRANCHES_URL = 'https://reviewboard-hg.mozilla.org/build-tools/raw-file/4c73269/buildfarm/maintenance/production-branches.json';
+const PRODUCTION_BRANCHES_URL = 'https://reviewboard-hg.mozilla.org/build-tools/raw-file/default/buildfarm/maintenance/production-branches.json';
 
 const LEVEL_GROUPS = {
   scm_level_1: 1,
