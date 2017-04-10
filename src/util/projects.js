@@ -1,6 +1,6 @@
 import request from 'superagent';
 
-const PRODUCTION_BRANCHES_URL = 'https://reviewboard-hg.mozilla.org/build-tools/raw-file/default/buildfarm/maintenance/production-branches.json';
+const PRODUCTION_BRANCHES_URL = 'https://hg.mozilla.org/build/tools/raw-file/default/buildfarm/maintenance/production-branches.json';
 
 const LEVEL_GROUPS = {
   scm_level_1: 1,
