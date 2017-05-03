@@ -1,6 +1,15 @@
 import editRole from './util/edit-role';
 import {getProjects, hgmoPath} from './util/projects';
 
+// Additional static scopes to be added to generated lists
+var STATIC_SCOPES = {
+  // Grant any users with scm level 1 (try) access, the capability to run
+  // generic-worker unit tests. This really isn't a lot of scopes, but
+  // possibly more than we'd want to give to *anyone* so granting with scm
+  // level 1 seems like a reasonable control.
+  'scm_level_1': ['assume:project:taskcluster:generic-worker-tester']
+}
+
 module.exports.setup = (program) => {
   return program
     .command('make-scm-group-role <group>')
@@ -25,6 +34,10 @@ module.exports.run = async (group, options) => {
     return `assume:repo:hg.mozilla.org/${path}:*`;
   });
 
+  if (group in STATIC_SCOPES) {
+    scopes = scopes.concat(STATIC_SCOPES[group])
+  }
+
   var description = [
     '*DO NOT EDIT*',
     '',
@@ -40,5 +53,3 @@ module.exports.run = async (group, options) => {
     noop: options.noop,
   });
 };
-
-
