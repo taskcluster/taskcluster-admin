@@ -32,3 +32,8 @@ exports.hgmoPath = (project) => {
     return project.repo.replace('https://hg.mozilla.org/', '');
   }
 };
+
+// Calculate the hg.mozilla.org path for a given project, or undefined if unknown.
+exports.feature = (project, feature) => {
+  return project.features && project.features[feature];
+};

@@ -1,5 +1,5 @@
 import editRole from './util/edit-role';
-import {getProjects, hgmoPath, scmLevel} from './util/projects';
+import {getProjects, hgmoPath, scmLevel, feature} from './util/projects';
 
 module.exports.setup = (program) => {
   return program
@@ -62,6 +62,10 @@ module.exports.run = async function(projectsOption, options) {
 
     );
 
+    if (feature(project, 'is-trunk')) {
+      scopes.push('queue:route:index.gecko.v2.trunk.revision.*');
+    }
+
     var description = [
       '*DO NOT EDIT*',
       '',
@@ -77,9 +81,9 @@ module.exports.run = async function(projectsOption, options) {
       noop: options.noop,
     });
 
-    // nightly-specific scopes
+    // cron scopes
 
-    if (project.features['taskcluster-cron']) {
+    if (feature(project, 'taskcluster-cron')) {
       roleId = `repo:hg.mozilla.org/${path}:cron:nightly-*`;
       scopes = [
         'assume:project:releng:nightly:level-<level>:<project>',
