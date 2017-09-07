@@ -19,7 +19,7 @@ module.exports.run = async (group, options) => {
     .filter(p => projects[p].access === group)
     .map(p => projects[p]);
 
-  var roleId = 'mozilla-group:' + group;
+  var roleId = 'mozilla-group:active_' + group;
   var scopes = projectsWithGroup.map(project => {
     let path = hgmoPath(project);
     return `assume:repo:hg.mozilla.org/${path}:*`;
@@ -28,7 +28,7 @@ module.exports.run = async (group, options) => {
   var description = [
     '*DO NOT EDIT*',
     '',
-    'Scopes for members of this group, based on repos with this access levels',
+    'Scopes for members of this group, based on repos with this access level',
     '',
     'This role is configured automatically by [taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).',
   ].join('\n');
