@@ -74,7 +74,7 @@ module.exports.run = async function(projectName, options) {
     },
     task: {
       provisionerId: 'aws-provisioner-v1',
-      workerType: 'gecko-decision',
+      workerType: `gecko-${level}-decision`,
       schedulerId: `gecko-level-${level}`,
       routes: [],
       scopes: [`assume:hook-id:${hookGroupId}/${hookId}`],
