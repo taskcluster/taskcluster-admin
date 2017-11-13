@@ -54,6 +54,7 @@ module.exports.run = async function(projectsOption, options) {
       'queue:route:tc-treeherder.<project>.*',
       'queue:route:tc-treeherder-stage.v2.<project>.*',
       'queue:route:tc-treeherder.v2.<project>.*',
+      'queue:route:coalesce.v1.builds.<project>.*',  // deprecated - https://bugzilla.mozilla.org/show_bug.cgi?id=1382204
       'queue:route:coalesce.v1.<project>.*',
       'queue:route:index.releases.v1.<project>.*',
     ].map((scope) =>
