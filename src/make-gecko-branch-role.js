@@ -57,6 +57,7 @@ module.exports.run = async function(projectsOption, options) {
       'queue:route:coalesce.v1.builds.<project>.*',  // deprecated - https://bugzilla.mozilla.org/show_bug.cgi?id=1382204
       'queue:route:coalesce.v1.<project>.*',
       'queue:route:index.releases.v1.<project>.*',
+      'project:releng:buildbot-bridge:builder-name:release-<project>-*',
     ].map((scope) =>
       scope
       .replace('<project>', projectName)
