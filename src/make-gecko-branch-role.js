@@ -55,6 +55,7 @@ module.exports.run = async function(projectsOption, options) {
       'queue:route:tc-treeherder-stage.v2.<project>.*',
       'queue:route:tc-treeherder.v2.<project>.*',
       'queue:route:coalesce.v1.<project>.*',
+      'queue:route:index.releases.v1.<project>.*',
     ].map((scope) =>
       scope
       .replace('<project>', projectName)
