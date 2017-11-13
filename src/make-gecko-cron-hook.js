@@ -6,27 +6,44 @@ import {diffLines} from 'diff';
 
 module.exports.setup = (program) => {
   return program
-    .command('make-gecko-cron-hook <project>')
+    .command('make-gecko-cron-hook [projects...]')
     .option('-n, --noop', 'Don\'t change roles, just show difference')
+    .option('--all', 'Operate on all projects')
     .description('create or update a hook and its role for running gecko cron jobs')
 };
 
-module.exports.run = async function(projectName, options) {
+module.exports.run = async function(projectsOption, options) {
   var taskcluster = require('taskcluster-client');
   var chalk = require('chalk');
   var projects = await getProjects();
 
-  var project = projects[projectName];
-  if (!project) {
-    console.log(chalk.red(`Project ${projectName} is not defined in production-branches.json`));
-    process.exit(1);
+  if (options.all) {
+    projectsOption = Object.keys(projects);
   }
 
-  if (!project.features['taskcluster-cron']) {
-    console.log(chalk.red(`Project ${projectName} does not have feature taskcluster-cron in production-branches.json`));
-    process.exit(1);
-  }
+  while (projectsOption.length) {
+    var projectName = projectsOption.pop();
+    var project = projects[projectName];
+    if (!project) {
+      console.log(chalk.red(`Project ${projectName} is not defined in production-branches.json`));
+      process.exit(1);
+    }
 
+    if (!project.features['taskcluster-cron']) {
+      if (options.all) {
+        console.log(chalk.yellow(`Skipping project ${projectName}: does not have feature taskcluster-cron in production-branches.json`));
+        continue;
+      }
+
+      console.log(chalk.red(`Project ${projectName} does not have feature taskcluster-cron in production-branches.json`));
+      process.exit(1);
+    }
+
+    await makeHook(projectName, project, options);
+  }
+}
+
+var makeHook = async function(projectName, project, options) {
   var level = scmLevel(project);
   if (!level) {
     console.log(chalk.red(`Cannot determine project level`));
