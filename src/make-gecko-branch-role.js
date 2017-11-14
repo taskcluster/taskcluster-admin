@@ -58,6 +58,7 @@ module.exports.run = async function(projectsOption, options) {
       'queue:route:coalesce.v1.<project>.*',
       'queue:route:index.releases.v1.<project>.*',
       'project:releng:buildbot-bridge:builder-name:release-<project>-*',
+      'project:releng:buildbot-bridge:builder-name:release-<project>_*',
     ].map((scope) =>
       scope
       .replace('<project>', projectName)
