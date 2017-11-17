@@ -51,7 +51,7 @@ module.exports.run = async function(projectsOption, options) {
       'assume:moz-tree:level:<level>',
       'queue:route:index.<trust-domain>.v2.<project>.*',
       'index:insert-task:<trust-domain>.v2.<project>.*',
-      'index:route:index:<trust-domain>.cache.level-<level>.*',
+      'queue:route:index.<trust-domain>.cache.level-<level>.*',
       'index:insert-task:<trust-domain>.cache.level-<level>.*',
       'queue:route:tc-treeherder-stage.<project>.*',
       'queue:route:tc-treeherder.<project>.*',
