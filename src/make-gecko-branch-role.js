@@ -49,6 +49,7 @@ module.exports.run = async function(projectsOption, options) {
     var roleId = `repo:hg.mozilla.org/${path}:*`;
     var scopes = [
       'assume:moz-tree:level:<level>',
+      'assume:moz-tree:level:<level>:<trust-domain>',
       'queue:route:index.<trust-domain>.v2.<project>.*',
       'index:insert-task:<trust-domain>.v2.<project>.*',
       'queue:route:index.<trust-domain>.cache.level-<level>.*',
