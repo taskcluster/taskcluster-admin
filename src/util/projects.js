@@ -1,6 +1,7 @@
 import request from 'superagent';
+import yaml from 'js-yaml';
 
-const PRODUCTION_BRANCHES_URL = 'https://hg.mozilla.org/build/tools/raw-file/default/buildfarm/maintenance/production-branches.json';
+const CI_CONFIGURATION = 'https://hg.mozilla.org/build/ci-configuration/raw-file/default/';
 
 const LEVEL_GROUPS = {
   scm_level_1: 1,
@@ -11,11 +12,11 @@ const LEVEL_GROUPS = {
 
 // Get the latest production-branches.json, returning the decoded data.
 exports.getProjects = async () => {
-  let res = await request.get(PRODUCTION_BRANCHES_URL).buffer(true);
+  let res = await request.get(CI_CONFIGURATION + 'projects.yml').buffer(true);
   if (!res.ok) {
     throw new Error(res.text);
   }
-  return JSON.parse(res.text);
+  return yaml.safeLoad(res.text);
 };
 
 // Calculate the numeric SCM level for a repo, or undefined if unknown.  This
