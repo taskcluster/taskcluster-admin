@@ -9,6 +9,13 @@ module.exports.setup = (program) => {
     .description('create or update a gecko branch role');
 };
 
+let ALL_FEATURES = [
+  'taskcluster-docker-routes-v1',
+  'taskcluster-docker-routes-v2',
+  'buildbot',
+  'is-trunk',
+];
+
 module.exports.run = async function(projectsOption, options) {
   var taskcluster = require('taskcluster-client');
   var chalk = require('chalk');
@@ -48,64 +55,13 @@ module.exports.run = async function(projectsOption, options) {
 
     var roleId = `repo:hg.mozilla.org/${path}:*`;
     var scopes = [
-      'assume:moz-tree:level:<level>:<trust-domain>',
-      'queue:route:index.<trust-domain>.v2.<project>.*',
-      'index:insert-task:<trust-domain>.v2.<project>.*',
-      'queue:route:index.<trust-domain>.cache.level-<level>.*',
-      'index:insert-task:<trust-domain>.cache.level-<level>.*',
-      'queue:route:tc-treeherder-stage.<project>.*',
-      'queue:route:tc-treeherder.<project>.*',
-      'queue:route:tc-treeherder-stage.v2.<project>.*',
-      'queue:route:tc-treeherder.v2.<project>.*',
-      'queue:route:coalesce.v1.builds.<project>.*',  // deprecated - https://bugzilla.mozilla.org/show_bug.cgi?id=1382204
-      'queue:route:coalesce.v1.<project>.*',
-      'queue:route:index.releases.v1.<project>.*',
-      'secrets:get:project/releng/<trust-domain>/build/level-<level>/*'
-    ].map((scope) =>
-      scope
-      .replace('<trust-domain>', domain)
-      .replace('<project>', projectName)
-      .replace('<level>', level)
-    );
+      `assume:project:releng:branch:${domain}:level-${level}:${projectName}`,
+    ];
 
-    if (feature(project, 'taskcluster-docker-routes-v1')) {
-      scopes.push(...[
-        'queue:route:index.docker.images.v1.<project>.*',
-        'index:insert-task:docker.images.v1.<project>.*',
-      ].map((scope) =>
-        scope
-        .replace('<project>', projectName)
-        .replace('<level>', level)
-      ));
-    }
-
-    if (feature(project, 'taskcluster-docker-routes-v2')) {
-      scopes.push(...[
-        'queue:route:index.docker.images.v2.level-<level>.*'
-      ].map((scope) =>
-        scope
-        .replace('<project>', projectName)
-        .replace('<level>', level)
-      ));
-    }
-
-    if (feature(project, 'buildbot')) {
-      scopes.push(...[
-        'queue:route:index.buildbot.branches.<project>.*',
-        'index:insert-task:buildbot.branches.<project>.*',
-        'queue:route:index.buildbot.revisions.*',
-        'index:insert-task:buildbot.revisions.*',
-        'project:releng:buildbot-bridge:builder-name:release-<project>-*',
-        'project:releng:buildbot-bridge:builder-name:release-<project>_*',
-      ].map((scope) =>
-        scope
-        .replace('<project>', projectName)
-        .replace('<level>', level)
-      ));
-    }
-
-    if (feature(project, 'is-trunk')) {
-      scopes.push('queue:route:index.gecko.v2.trunk.revision.*');
+    for (let feat of ALL_FEATURES) {
+      if (feature(project, feat)) {
+        scopes.push(`assume:project:releng:feature:${feat}:${domain}:level-${level}:${projectName}`);
+      }
     }
 
     var description = [
