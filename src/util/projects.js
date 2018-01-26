@@ -10,6 +10,20 @@ const LEVEL_GROUPS = {
   scm_autoland: 3,
 };
 
+// each project has a set of enabled features, and we use roles for each of them.
+exports.ALL_FEATURES = [
+  'taskcluster-docker-routes-v1',
+  'taskcluster-docker-routes-v2',
+  'buildbot',
+  'is-trunk',
+];
+
+// for each trust domain, we use a different root for the parameterized roles
+exports.ROLE_ROOTS = {
+  gecko: 'project:releng',
+  comm: 'project:comm:thunderbird:comm:releng',
+};
+
 // Get the latest production-branches.json, returning the decoded data.
 exports.getProjects = async () => {
   let res = await request.get(CI_CONFIGURATION + 'projects.yml').buffer(true);

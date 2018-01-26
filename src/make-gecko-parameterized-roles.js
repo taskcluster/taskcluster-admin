@@ -1,5 +1,5 @@
 import editRole from './util/edit-role';
-import {getProjects, hgmoPath, scmLevel, feature} from './util/projects';
+import {getProjects, hgmoPath, scmLevel, feature, ROLE_ROOTS} from './util/projects';
 
 module.exports.setup = (program) => {
   return program
@@ -24,8 +24,14 @@ module.exports.run = async function(options) {
 
   for (let level of allLevels) {
     for (let domain of allDomains) {
+      var roleRoot = ROLE_ROOTS[domain];
+      if (!roleRoot) {
+        console.log(chalk.red(`Unknown trust domain ${domain}.`));
+        process.exit(1);
+      }
+
       await editRole({
-        roleId: `project:releng:branch:${domain}:level-${level}:*`,
+        roleId: `${roleRoot}:branch:${domain}:level-${level}:*`,
         description: description(
           `Scopes for ${domain} projects at level ${level}; the '*' matches the project name.`
         ),
@@ -49,7 +55,7 @@ module.exports.run = async function(options) {
 
       let makeFeature = async (feature, scopes) => {
         await editRole({
-          roleId: `project:releng:feature:${feature}:${domain}:level-${level}:*`,
+          roleId: `${roleRoot}:feature:${feature}:${domain}:level-${level}:*`,
           description: description(
             `Scopes for ${domain} projects at level ${level} with feature '${feature}'; the '*' matches the project name.`
           ),
@@ -58,12 +64,12 @@ module.exports.run = async function(options) {
         });
       };
 
-      await makeFeature('taskcsluter-docker-routes-v1', [
+      await makeFeature('taskcluster-docker-routes-v1', [
         `queue:route:index.docker.images.v1.<..>.*`,
         `index:insert-task:docker.images.v1.<..>.*`,
       ]);
 
-      await makeFeature('taskcsluter-docker-routes-v2', [
+      await makeFeature('taskcluster-docker-routes-v2', [
         `queue:route:index.docker.images.v2.level-${level}.*`
       ]);
 

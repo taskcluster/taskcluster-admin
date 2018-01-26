@@ -1,5 +1,5 @@
 import editRole from './util/edit-role';
-import {getProjects, hgmoPath, scmLevel, feature} from './util/projects';
+import {getProjects, hgmoPath, scmLevel, feature, ALL_FEATURES, ROLE_ROOTS} from './util/projects';
 
 module.exports.setup = (program) => {
   return program
@@ -8,13 +8,6 @@ module.exports.setup = (program) => {
     .option('--all', 'Operate on all projects')
     .description('create or update a gecko branch role');
 };
-
-let ALL_FEATURES = [
-  'taskcluster-docker-routes-v1',
-  'taskcluster-docker-routes-v2',
-  'buildbot',
-  'is-trunk',
-];
 
 module.exports.run = async function(projectsOption, options) {
   var taskcluster = require('taskcluster-client');
@@ -46,6 +39,11 @@ module.exports.run = async function(projectsOption, options) {
       process.exit(1);
     }
 
+    var roleRoot = ROLE_ROOTS[domain];
+    if (!roleRoot) {
+      console.log(chalk.red(`Unknown trust domain for ${projectName}.`));
+      process.exit(1);
+    }
 
     var path = hgmoPath(project);
     if (!path) {
@@ -55,12 +53,12 @@ module.exports.run = async function(projectsOption, options) {
 
     var roleId = `repo:hg.mozilla.org/${path}:*`;
     var scopes = [
-      `assume:project:releng:branch:${domain}:level-${level}:${projectName}`,
+      `assume:${roleRoot}:branch:${domain}:level-${level}:${projectName}`,
     ];
 
     for (let feat of ALL_FEATURES) {
       if (feature(project, feat)) {
-        scopes.push(`assume:project:releng:feature:${feat}:${domain}:level-${level}:${projectName}`);
+        scopes.push(`assume:${roleRoot}:feature:${feat}:${domain}:level-${level}:${projectName}`);
       }
     }
 
@@ -84,13 +82,8 @@ module.exports.run = async function(projectsOption, options) {
     if (feature(project, 'taskcluster-cron')) {
       roleId = `repo:hg.mozilla.org/${path}:cron:nightly-*`;
       scopes = [
-        'assume:project:releng:nightly:level-<level>:<project>',
-      ].map((scope) =>
-        scope
-        .replace('<project>', projectName)
-        .replace('<level>', level)
-
-      );
+        `assume:${roleRoot}:nightly:level-${level}:${projectName}`,
+      ];
 
       description = [
         '*DO NOT EDIT*',
