@@ -86,14 +86,17 @@ var makeHook = async function(projectName, project, options) {
         '',
         'This hook is configured automatically by [taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).',
       ].join('\n'),
-      owner: 'dustin@mozilla.com',
-      emailOnError: false
+      owner: 'taskcluster-notifications@mozilla.com',
+      emailOnError: true
     },
     task: {
       provisionerId: 'aws-provisioner-v1',
       workerType: `gecko-${level}-decision`,
       schedulerId: `gecko-level-${level}`,
-      routes: [],
+      routes: [
+        'notify.email.taskcluster-notifications@mozilla.com.on-exception',
+        'notify.email.taskcluster-notifications@mozilla.com.on-failed',
+      ],
       scopes: [`assume:hook-id:${hookGroupId}/${hookId}`],
       payload: {
         env: {
@@ -144,7 +147,12 @@ var makeHook = async function(projectName, project, options) {
       "0 0,15,30,45 * * * *", // every 15 minutes
     ],
     deadline: '1 hour',
-    expires: '7 days'
+    expires: '7 days',
+		triggerSchema: {
+			type: 'object',
+			properties: {},
+			additionalProperties: false
+		}
   };
   // set a property that is not a valid identifier
   newHook.task.payload.cache[`level-${level}-checkouts`] = '/home/worker/checkouts';
