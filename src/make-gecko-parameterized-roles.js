@@ -37,6 +37,8 @@ module.exports.run = async function(options) {
         ),
         scopes: [
           `assume:moz-tree:level:${level}:${domain}`,
+          `queue:route:index.${domain}.v1.<..>.*`,
+          `index:insert-task:${domain}.v1.<..>.*`,
           `queue:route:index.${domain}.v2.<..>.*`,
           `index:insert-task:${domain}.v2.<..>.*`,
           `queue:route:index.${domain}.cache.level-${level}.*`,
