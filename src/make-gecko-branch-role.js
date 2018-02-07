@@ -62,6 +62,10 @@ module.exports.run = async function(projectsOption, options) {
       }
     }
 
+    for (let scope of project.extra_tc_scopes || []) {
+      scopes.push(scope);
+    }
+
     var description = [
       '*DO NOT EDIT*',
       '',
