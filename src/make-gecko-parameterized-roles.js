@@ -37,8 +37,6 @@ module.exports.run = async function(options) {
         ),
         scopes: [
           `assume:moz-tree:level:${level}:${domain}`,
-          `queue:route:index.${domain}.v1.<..>.*`,
-          `index:insert-task:${domain}.v1.<..>.*`,
           `queue:route:index.${domain}.v2.<..>.*`,
           `index:insert-task:${domain}.v2.<..>.*`,
           `queue:route:index.${domain}.cache.level-${level}.*`,
@@ -50,6 +48,7 @@ module.exports.run = async function(options) {
           `queue:route:coalesce.v1.builds.<..>.*`,  // deprecated - https://bugzilla.mozilla.org/show_bug.cgi?id=1382204
           `queue:route:coalesce.v1.<..>.*`,
           `queue:route:index.releases.v1.<..>.*`,
+          `index:insert-task:releases.v1.<..>.*`,
           `secrets:get:project/releng/${domain}/build/level-${level}/*`,
         ],
         noop: options.noop,
