@@ -98,6 +98,8 @@ var makeHook = async function(projectName, project, options) {
         'notify.email.taskcluster-notifications@mozilla.com.on-failed',
       ],
       scopes: [`assume:hook-id:${hookGroupId}/${hookId}`],
+      deadline: {$fromNow: '1 hour'},
+      expires: {$fromNow: '7 days'},
       payload: {
         env: {
           GECKO_BASE_REPOSITORY: 'https://hg.mozilla.org/mozilla-unified',
@@ -146,8 +148,6 @@ var makeHook = async function(projectName, project, options) {
     schedule: [
       "0 0,15,30,45 * * * *", // every 15 minutes
     ],
-    deadline: '1 hour',
-    expires: '7 days',
 		triggerSchema: {
 			type: 'object',
 			properties: {},
