@@ -16,14 +16,14 @@
   },
   "license": "MPL-2.0",
   "dependencies": {
-    "chalk": "^1.1.1",
+    "chalk": "^2.3.2",
     "commander": "^2.9.0",
     "diff": "^3.2.0",
     "js-yaml": "^3.10.0",
     "lodash": "^4.16.4",
     "simple-array-diff": "^1.1.0",
     "superagent": "^3.5.0",
-    "taskcluster-client": "^2.2.0"
+    "taskcluster-client": "^3.3.0"
   },
   "devDependencies": {
     "eslint-config-taskcluster": "^3.0.0"
