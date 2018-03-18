@@ -1,5 +1,5 @@
-import editRole from './util/edit-role';
-import {getProjects, hgmoPath, scmLevel, feature} from './util/projects';
+const editRole = require('./util/edit-role');
+const {getProjects, hgmoPath, scmLevel, feature} = require('./util/projects');
 
 module.exports.setup = (program) => {
   return program

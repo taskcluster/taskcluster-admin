@@ -1,8 +1,8 @@
-import chalk from 'chalk';
-import taskcluster from 'taskcluster-client';
-import arrayDiff from 'simple-array-diff';
+const chalk = require('chalk');
+const taskcluster = require('taskcluster-client');
+const arrayDiff = require('simple-array-diff');
 
-export default async ({roleId, description, scopes, noop}) => {
+const editRole = async ({roleId, description, scopes, noop}) => {
   var auth = new taskcluster.Auth();
 
   var role;
@@ -47,3 +47,5 @@ export default async ({roleId, description, scopes, noop}) => {
     console.log(chalk.green.bold('done'));
   }
 };
+
+module.exports = editRole;

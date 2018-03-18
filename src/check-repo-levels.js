@@ -1,5 +1,5 @@
-import {getProjects, hgmoPath, scmLevel} from './util/projects';
-import child_process from 'child_process';
+const {getProjects, hgmoPath, scmLevel} = require('./util/projects');
+const child_process = require('child_process');
 
 module.exports.setup = (program) => {
   return program

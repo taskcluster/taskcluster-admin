@@ -1,8 +1,8 @@
-import {getProjects, hgmoPath, scmLevel} from './util/projects';
-import editRole from './util/edit-role';
-import chalk from 'chalk';
-import taskcluster from 'taskcluster-client';
-import {diffLines} from 'diff';
+const {getProjects, hgmoPath, scmLevel} = require('./util/projects');
+const editRole = require('./util/edit-role');
+const chalk = require('chalk');
+const taskcluster = require('taskcluster-client');
+const {diffLines} = require('diff');
 
 module.exports.setup = (program) => {
   return program
