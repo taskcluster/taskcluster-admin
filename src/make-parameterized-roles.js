@@ -19,7 +19,8 @@ module.exports.run = async function(options) {
 
   await editRole({
     roleId: 'project-admin:*',
-    description: description('Scopes for administrators of projects; this gives complete control over everything related to the project.'),
+    description: description(
+      'Scopes for administrators of projects; this gives complete control over everything related to the project.'),
     scopes: [
       'assume:hook-id:project-<..>/*',
       'assume:project:<..>:*',

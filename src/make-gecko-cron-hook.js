@@ -9,7 +9,7 @@ module.exports.setup = (program) => {
     .command('make-gecko-cron-hook [projects...]')
     .option('-n, --noop', 'Don\'t change roles, just show difference')
     .option('--all', 'Operate on all projects')
-    .description('create or update a hook and its role for running gecko cron jobs')
+    .description('create or update a hook and its role for running gecko cron jobs');
 };
 
 module.exports.run = async function(projectsOption, options) {
@@ -31,22 +31,24 @@ module.exports.run = async function(projectsOption, options) {
 
     if (!project.features['taskcluster-cron']) {
       if (options.all) {
-        console.log(chalk.yellow(`Skipping project ${projectName}: does not have feature taskcluster-cron in production-branches.json`));
+        console.log(chalk.yellow(
+          `Skipping project ${projectName}: does not have feature taskcluster-cron in production-branches.json`));
         continue;
       }
 
-      console.log(chalk.red(`Project ${projectName} does not have feature taskcluster-cron in production-branches.json`));
+      console.log(chalk.red(
+        `Project ${projectName} does not have feature taskcluster-cron in production-branches.json`));
       process.exit(1);
     }
 
     await makeHook(projectName, project, options);
   }
-}
+};
 
 var makeHook = async function(projectName, project, options) {
   var level = scmLevel(project);
   if (!level) {
-    console.log(chalk.red(`Cannot determine project level`));
+    console.log(chalk.red('Cannot determine project level'));
     process.exit(1);
   }
 
@@ -84,10 +86,11 @@ var makeHook = async function(projectName, project, options) {
         '',
         `The cron hook for https://hg.mozilla.org/${path}`,
         '',
-        'This hook is configured automatically by [taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).',
+        'This hook is configured automatically by',
+        '[taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).',
       ].join('\n'),
       owner: 'taskcluster-notifications@mozilla.com',
-      emailOnError: true
+      emailOnError: true,
     },
     task: {
       provisionerId: 'aws-provisioner-v1',
@@ -105,12 +108,12 @@ var makeHook = async function(projectName, project, options) {
           GECKO_BASE_REPOSITORY: 'https://hg.mozilla.org/mozilla-unified',
           GECKO_HEAD_REPOSITORY: `https://hg.mozilla.org/${path}`,
           GECKO_HEAD_REF: 'default',
-          HG_STORE_PATH: '/home/worker/checkouts/hg-store'
+          HG_STORE_PATH: '/home/worker/checkouts/hg-store',
         },
         cache: {}, // see below
         features: {
           taskclusterProxy: true,
-          chainOfTrust: true
+          chainOfTrust: true,
         },
         image: 'taskcluster/decision:0.1.7',
         maxRunTime: 1800,
@@ -123,16 +126,17 @@ var makeHook = async function(projectName, project, options) {
           [
             'cd /home/worker/checkouts/gecko',
             'ln -s /home/worker/artifacts artifacts',
-            './mach --log-no-times taskgraph cron --base-repository=$GECKO_BASE_REPOSITORY --head-repository=$GECKO_HEAD_REPOSITORY ' +
-              `--head-ref=$GECKO_HEAD_REF --project=${projectName} --level=${level}`
+            './mach --log-no-times taskgraph cron --base-repository=$GECKO_BASE_REPOSITORY ' +
+            '--head-repository=$GECKO_HEAD_REPOSITORY ' +
+              `--head-ref=$GECKO_HEAD_REF --project=${projectName} --level=${level}`,
           ].join(' && '),
         ],
         artifacts: {
           public: {
             type: 'directory',
-            path: '/home/worker/artifacts'
-          }
-        }
+            path: '/home/worker/artifacts',
+          },
+        },
       },
       metadata: {
         owner: 'mozilla-taskcluster-maintenance@mozilla.com',
@@ -143,16 +147,16 @@ var makeHook = async function(projectName, project, options) {
       priority: 'normal',
       retries: 5,
       tags: {},
-      extra: {}
+      extra: {},
     },
     schedule: [
-      "0 0,15,30,45 * * * *", // every 15 minutes
+      '0 0,15,30,45 * * * *', // every 15 minutes
     ],
-		triggerSchema: {
-			type: 'object',
-			properties: {},
-			additionalProperties: false
-		}
+    triggerSchema: {
+      type: 'object',
+      properties: {},
+      additionalProperties: false,
+    },
   };
   // set a property that is not a valid identifier
   newHook.task.payload.cache[`level-${level}-checkouts`] = '/home/worker/checkouts';
@@ -173,9 +177,9 @@ var makeHook = async function(projectName, project, options) {
 
   // compare and display the differences
   const diffs = diffLines(
-      JSON.stringify(hook, null, 2),
-      JSON.stringify(newHook, null, 2),
-      {newlineIsToken: true});
+    JSON.stringify(hook, null, 2),
+    JSON.stringify(newHook, null, 2),
+    {newlineIsToken: true});
   let diffsFound = false;
   diffs.forEach(diff => {
     if (diff.added || diff.removed) {

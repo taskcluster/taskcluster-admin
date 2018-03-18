@@ -44,12 +44,11 @@ module.exports.run = async function(workerTypesOption, options) {
     });
 
     if (changed && !options.noop) {
-      console.log(chalk.red("writing back"));
+      console.log(chalk.red('writing back'));
       delete wtDef['workerType'];
       delete wtDef['lastModified'];
       await awsProvisioner.updateWorkerType(workerType, wtDef);
     }
   }
 };
-
 

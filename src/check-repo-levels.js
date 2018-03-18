@@ -4,7 +4,8 @@ import child_process from 'child_process';
 module.exports.setup = (program) => {
   return program
     .command('check-repo-levels')
-    .description('check that the hg server and production-branches.json agree about repo levels. Must have an active Mozilla SSH key.');
+    .description('check that the hg server and production-branches.json agree ' +
+                 'about repo levels. Must have an active Mozilla SSH key.');
 };
 
 // some repos have more-specific groups, so we map those to the more general

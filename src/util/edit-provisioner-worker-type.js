@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import _ from 'lodash';
 import taskcluster from 'taskcluster-client';
-import { diffJson } from 'diff';
+import {diffJson} from 'diff';
 
 export default async ({workerType, original, updated, noop}) => {
   const provisioner = new taskcluster.AwsProvisioner();
