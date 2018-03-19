@@ -1,5 +1,5 @@
-import editRole from './util/edit-role';
-import {getProjects, hgmoPath} from './util/projects';
+const editRole = require('./util/edit-role');
+const {getProjects, hgmoPath} = require('./util/projects');
 
 module.exports.setup = (program) => {
   return program
@@ -40,5 +40,4 @@ module.exports.run = async (group, options) => {
     noop: options.noop,
   });
 };
-
 

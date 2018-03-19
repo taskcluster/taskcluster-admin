@@ -1,9 +1,9 @@
-import chalk from 'chalk';
-import _ from 'lodash';
-import taskcluster from 'taskcluster-client';
-import { diffJson } from 'diff';
+const chalk = require('chalk');
+const _ = require('lodash');
+const taskcluster = require('taskcluster-client');
+const {diffJson} = require('diff');
 
-export default async ({workerType, original, updated, noop}) => {
+const editProvisionerWorkerType = async ({workerType, original, updated, noop}) => {
   const provisioner = new taskcluster.AwsProvisioner();
 
   var diff = diffJson(original, updated);
@@ -34,3 +34,4 @@ export default async ({workerType, original, updated, noop}) => {
   }
 };
 
+module.exports = editProvisionerWorkerType;

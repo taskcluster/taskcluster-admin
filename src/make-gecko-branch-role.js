@@ -1,5 +1,5 @@
-import editRole from './util/edit-role';
-import {getProjects, hgmoPath, scmLevel, feature, ALL_FEATURES, ROLE_ROOTS} from './util/projects';
+const editRole = require('./util/edit-role');
+const {getProjects, hgmoPath, scmLevel, feature, ALL_FEATURES, ROLE_ROOTS} = require('./util/projects');
 
 module.exports.setup = (program) => {
   return program
@@ -94,7 +94,8 @@ module.exports.run = async function(projectsOption, options) {
         '',
         `Scopes for nighlty cron tasks triggered from pushes to https://hg.mozilla.org/${path}`,
         '',
-        'This role is configured automatically by [taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).',
+        'This role is configured automatically by ',
+        '[taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).',
       ].join('\n');
 
       // edit the nightly-specific role

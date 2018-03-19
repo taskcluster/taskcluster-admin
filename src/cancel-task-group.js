@@ -15,15 +15,14 @@ module.exports.run = async (taskGroupId) => {
     let result = await queue.listTaskGroup(taskGroupId, continuationToken? {continuationToken} : {});
     continuationToken = result.continuationToken;
     for (let task of result.tasks) {
-      if (["pending", "running"].indexOf(task.status.state) !== -1) {
+      if (['pending', 'running'].indexOf(task.status.state) !== -1) {
         console.log(`cancelling ${task.status.taskId}`);
         cancellations.push(queue.cancelTask(task.status.taskId));
       }
     }
-  } while(continuationToken)
+  } while (continuationToken);
 
   console.log(`waiting for ${cancellations.length} to finish`);
   await Promise.all(cancellations);
 };
-
 

@@ -2,14 +2,13 @@
   "name": "taskcluster-admin",
   "version": "1.0.0",
   "description": "Administrative scripts for TaskCluster administrators",
-  "main": "lib/index.js",
+  "main": "src/index.js",
   "bin": {
-    "tcadmin": "lib/index.js"
+    "tcadmin": "src/index.js"
   },
   "scripts": {
-    "tcadmin": "node lib/index.js",
-    "compile": "babel-compile -p taskcluster src:lib",
-    "prepublish": "npm run compile"
+    "lint": "eslint *.js src/*.js src/*/*.js test/*.js",
+    "tcadmin": "node src/index.js"
   },
   "repository": {
     "type": "git",
@@ -17,22 +16,21 @@
   },
   "license": "MPL-2.0",
   "dependencies": {
-    "chalk": "^1.1.1",
+    "chalk": "^2.3.2",
     "commander": "^2.9.0",
     "diff": "^3.2.0",
     "js-yaml": "^3.10.0",
     "lodash": "^4.16.4",
     "simple-array-diff": "^1.1.0",
     "superagent": "^3.5.0",
-    "taskcluster-client": "^2.2.0"
+    "taskcluster-client": "^3.3.0"
   },
   "devDependencies": {
-    "babel-compile": "^2.0.0",
-    "babel-preset-taskcluster": "^3.0.0"
+    "eslint-config-taskcluster": "^3.0.0"
   },
   "engine-strict": true,
   "engines": {
-    "node": "7.4.0",
-    "yarn": "0.21.3"
+    "node": "^8.0.0",
+    "yarn": "^1.0.0"
   }
 }

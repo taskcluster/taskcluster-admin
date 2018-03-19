@@ -1,4 +1,4 @@
-import _ from 'lodash';
+const _ = require('lodash');
 
 module.exports.setup = (program) => {
   return program
@@ -34,7 +34,7 @@ module.exports.run = async function(workerTypesOption, options) {
     ];
 
     if (!_.isEqual(wtDef.scopes, scopes)) {
-      console.log(chalk.red("writing back fixed scopes"));
+      console.log(chalk.red('writing back fixed scopes'));
       delete wtDef['workerType'];
       delete wtDef['lastModified'];
       await awsProvisioner.updateWorkerType(workerType, wtDef);

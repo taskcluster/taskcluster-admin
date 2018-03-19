@@ -6,12 +6,12 @@ var program = require('commander');
 
 // global options
 program
-  .version(require('../package.json').version)
+  .version(require('../package.json').version);
 
 // allow each subcommand to set up
 fs.readdirSync(__dirname).forEach((f) => {
-  if (f.endsWith('.js') && f !== "index.js") {
-    var script = require('./' + f)
+  if (f.endsWith('.js') && f !== 'index.js') {
+    var script = require('./' + f);
     script.setup(program).action(function() {
       var p = script.run.apply(script, arguments);
       if (p) {
@@ -26,7 +26,7 @@ fs.readdirSync(__dirname).forEach((f) => {
 
 // default to showing help
 program.command('*')
-  .description("..your command here?")
+  .description('..your command here?')
   .action(() => program.help(txt => txt));
 
 // run

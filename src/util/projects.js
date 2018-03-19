@@ -1,5 +1,5 @@
-import request from 'superagent';
-import yaml from 'js-yaml';
+const request = require('superagent');
+const yaml = require('js-yaml');
 
 const CI_CONFIGURATION = 'https://hg.mozilla.org/build/ci-configuration/raw-file/default/';
 

@@ -1,8 +1,8 @@
-import editProvisionerWorkerType from './util/edit-provisioner-worker-type';
-import _ from 'lodash';
-import {getProjects, hgmoPath, scmLevel, feature} from './util/projects';
+const editProvisionerWorkerType = require('./util/edit-provisioner-worker-type');
+const _ = require('lodash');
+const {getProjects, hgmoPath, scmLevel, feature} = require('./util/projects');
 
-const collect = (val, memo) => { memo.push(val); return memo; }
+const collect = (val, memo) => { memo.push(val); return memo; };
 module.exports.setup = (program) => {
   return program
     .command('modify-gecko-provisioner-worker-type [workerTypes...]')
@@ -74,7 +74,7 @@ const SUBNET_IDS = {
     'eu-central-1b': 'subnet-6988da13',
     'eu-central-1c': 'subnet-114d525b',
   },
-}
+};
 
 module.exports.run = async function(workerTypes, options) {
   const taskcluster = require('taskcluster-client');
