@@ -78,6 +78,35 @@ var makeHook = async function(projectName, project, options) {
 
   // set up hook
 
+
+  var repo_env, checkout;
+  if (!project.gecko_repo) {
+    // If there isn't a gecko_repo associated with this project, then it is itself a gecko repo
+    repo_env = {
+      GECKO_BASE_REPOSITORY: 'https://hg.mozilla.org/mozilla-unified',
+      GECKO_HEAD_REPOSITORY: `https://hg.mozilla.org/${path}`,
+      GECKO_HEAD_REF: 'default',
+    };
+    checkout = [
+      '--vcs-checkout=/home/worker/checkouts/gecko',
+    ];
+    cron_root = '';
+  } else {
+    // Otherwise it is a comm-central derived repository
+    repo_env = {
+      GECKO_BASE_REPOSITORY: 'https://hg.mozilla.org/mozilla-unified',
+      GECKO_HEAD_REPOSITORY: project.gecko_repo,
+      GECKO_HEAD_REF: 'default',
+      COMM_BASE_REPOSITORY: 'https://hg.mozilla.org/comm-central',
+      COMM_HEAD_REPOSITORY: `https://hg.mozilla.org/${path}`,
+      COMM_HEAD_REF: 'default',
+    };
+    checkout = [
+      '--vcs-checkout=/home/worker/checkouts/gecko',
+      '--comm-checkout=/home/worker/checkouts/gecko/comm',
+    ];
+    cron_root = '--root=comm/';
+  }
   const newHook = {
     metadata: {
       name: `Cron task for https://hg.mozilla.org/${path}`,
@@ -105,9 +134,7 @@ var makeHook = async function(projectName, project, options) {
       expires: {$fromNow: '7 days'},
       payload: {
         env: {
-          GECKO_BASE_REPOSITORY: 'https://hg.mozilla.org/mozilla-unified',
-          GECKO_HEAD_REPOSITORY: `https://hg.mozilla.org/${path}`,
-          GECKO_HEAD_REF: 'default',
+          ...repo_env,
           HG_STORE_PATH: '/home/worker/checkouts/hg-store',
         },
         cache: {}, // see below
@@ -119,7 +146,7 @@ var makeHook = async function(projectName, project, options) {
         maxRunTime: 1800,
         command: [
           '/home/worker/bin/run-task',
-          '--vcs-checkout=/home/worker/checkouts/gecko',
+          ...checkout,
           '--',
           'bash',
           '-cx',
@@ -128,7 +155,7 @@ var makeHook = async function(projectName, project, options) {
             'ln -s /home/worker/artifacts artifacts',
             './mach --log-no-times taskgraph cron --base-repository=$GECKO_BASE_REPOSITORY ' +
             '--head-repository=$GECKO_HEAD_REPOSITORY ' +
-              `--head-ref=$GECKO_HEAD_REF --project=${projectName} --level=${level}`,
+              `--head-ref=$GECKO_HEAD_REF --project=${projectName} --level=${level} ${cron_root}`,
           ].join(' && '),
         ],
         artifacts: {
