@@ -88,7 +88,7 @@ var makeHook = async function(projectName, project, options) {
       GECKO_HEAD_REF: 'default',
     };
     checkout = [
-      '--vcs-checkout=/home/worker/checkouts/gecko',
+      '--vcs-checkout=/builds/worker/checkouts/gecko',
     ];
     cron_root = '';
   } else {
@@ -102,8 +102,8 @@ var makeHook = async function(projectName, project, options) {
       COMM_HEAD_REF: 'default',
     };
     checkout = [
-      '--vcs-checkout=/home/worker/checkouts/gecko',
-      '--comm-checkout=/home/worker/checkouts/gecko/comm',
+      '--vcs-checkout=/builds/worker/checkouts/gecko',
+      '--comm-checkout=/builds/worker/checkouts/gecko/comm',
     ];
     cron_root = '--root=comm/';
   }
@@ -135,7 +135,8 @@ var makeHook = async function(projectName, project, options) {
       payload: {
         env: {
           ...repo_env,
-          HG_STORE_PATH: '/home/worker/checkouts/hg-store',
+          HG_STORE_PATH: '/builds/worker/checkouts/hg-store',
+          TASKCLUSTER_CACHES: '/builds/worker/checkouts',
         },
         cache: {}, // see below
         features: {
@@ -145,9 +146,8 @@ var makeHook = async function(projectName, project, options) {
         image: 'taskcluster/decision:2.0.0@sha256:4039fd878e5700b326d4a636e28c595c053fbcb53909c1db84ad1f513cf644ef',
         maxRunTime: 1800,
         command: [
-          '/home/worker/bin/run-task',
+          '/builds/worker/bin/run-task',
           ...checkout,
-          '--sparse-profile=build/sparse-profiles/taskgraph',
           '--',
           'bash',
           '-cx',
@@ -162,7 +162,7 @@ var makeHook = async function(projectName, project, options) {
         artifacts: {
           public: {
             type: 'directory',
-            path: '/home/worker/artifacts',
+            path: '/builds/worker/artifacts',
           },
         },
       },
@@ -187,7 +187,7 @@ var makeHook = async function(projectName, project, options) {
     },
   };
   // set a property that is not a valid identifier
-  newHook.task.payload.cache[`level-${level}-checkouts-sparse-v1`] = '/home/worker/checkouts';
+  newHook.task.payload.cache[`level-${level}-checkouts`] = '/builds/worker/checkouts';
 
   const hooks = new taskcluster.Hooks();
 
