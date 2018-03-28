@@ -142,17 +142,18 @@ var makeHook = async function(projectName, project, options) {
           taskclusterProxy: true,
           chainOfTrust: true,
         },
-        image: 'taskcluster/decision:0.1.7',
+        image: 'taskcluster/decision:2.0.0@sha256:4039fd878e5700b326d4a636e28c595c053fbcb53909c1db84ad1f513cf644ef',
         maxRunTime: 1800,
         command: [
           '/home/worker/bin/run-task',
           ...checkout,
+          '--sparse-profile=build/sparse-profiles/taskgraph',
           '--',
           'bash',
           '-cx',
           [
-            'cd /home/worker/checkouts/gecko',
-            'ln -s /home/worker/artifacts artifacts',
+            'cd /builds/worker/checkouts/gecko',
+            'ln -s /builds/worker/artifacts artifacts',
             './mach --log-no-times taskgraph cron --base-repository=$GECKO_BASE_REPOSITORY ' +
             '--head-repository=$GECKO_HEAD_REPOSITORY ' +
               `--head-ref=$GECKO_HEAD_REF --project=${projectName} --level=${level} ${cron_root}`,
@@ -186,7 +187,7 @@ var makeHook = async function(projectName, project, options) {
     },
   };
   // set a property that is not a valid identifier
-  newHook.task.payload.cache[`level-${level}-checkouts`] = '/home/worker/checkouts';
+  newHook.task.payload.cache[`level-${level}-checkouts-sparse-v1`] = '/home/worker/checkouts';
 
   const hooks = new taskcluster.Hooks();
 
