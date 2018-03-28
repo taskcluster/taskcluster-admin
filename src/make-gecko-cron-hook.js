@@ -78,6 +78,35 @@ var makeHook = async function(projectName, project, options) {
 
   // set up hook
 
+
+  var repo_env, checkout;
+  if (!project.gecko_repo) {
+    // If there isn't a gecko_repo associated with this project, then it is itself a gecko repo
+    repo_env = {
+      GECKO_BASE_REPOSITORY: 'https://hg.mozilla.org/mozilla-unified',
+      GECKO_HEAD_REPOSITORY: `https://hg.mozilla.org/${path}`,
+      GECKO_HEAD_REF: 'default',
+    };
+    checkout = [
+      '--vcs-checkout=/home/worker/checkouts/gecko',
+    ];
+    cron_root = '';
+  } else {
+    // Otherwise it is a comm-central derived repository
+    repo_env = {
+      GECKO_BASE_REPOSITORY: 'https://hg.mozilla.org/mozilla-unified',
+      GECKO_HEAD_REPOSITORY: project.gecko_repo,
+      GECKO_HEAD_REF: 'default',
+      COMM_BASE_REPOSITORY: 'https://hg.mozilla.org/comm-central',
+      COMM_HEAD_REPOSITORY: `https://hg.mozilla.org/${path}`,
+      COMM_HEAD_REF: 'default',
+    };
+    checkout = [
+      '--vcs-checkout=/home/worker/checkouts/gecko',
+      '--comm-checkout=/home/worker/checkouts/gecko/comm',
+    ];
+    cron_root = '--root=comm/';
+  }
   const newHook = {
     metadata: {
       name: `Cron task for https://hg.mozilla.org/${path}`,
@@ -105,9 +134,7 @@ var makeHook = async function(projectName, project, options) {
       expires: {$fromNow: '7 days'},
       payload: {
         env: {
-          GECKO_BASE_REPOSITORY: 'https://hg.mozilla.org/mozilla-unified',
-          GECKO_HEAD_REPOSITORY: `https://hg.mozilla.org/${path}`,
-          GECKO_HEAD_REF: 'default',
+          ...repo_env,
           HG_STORE_PATH: '/home/worker/checkouts/hg-store',
         },
         cache: {}, // see below
@@ -115,20 +142,21 @@ var makeHook = async function(projectName, project, options) {
           taskclusterProxy: true,
           chainOfTrust: true,
         },
-        image: 'taskcluster/decision:0.1.7',
+        image: 'taskcluster/decision:2.0.0@sha256:4039fd878e5700b326d4a636e28c595c053fbcb53909c1db84ad1f513cf644ef',
         maxRunTime: 1800,
         command: [
           '/home/worker/bin/run-task',
-          '--vcs-checkout=/home/worker/checkouts/gecko',
+          ...checkout,
+          '--sparse-profile=build/sparse-profiles/taskgraph',
           '--',
           'bash',
           '-cx',
           [
-            'cd /home/worker/checkouts/gecko',
-            'ln -s /home/worker/artifacts artifacts',
+            'cd /builds/worker/checkouts/gecko',
+            'ln -s /builds/worker/artifacts artifacts',
             './mach --log-no-times taskgraph cron --base-repository=$GECKO_BASE_REPOSITORY ' +
             '--head-repository=$GECKO_HEAD_REPOSITORY ' +
-              `--head-ref=$GECKO_HEAD_REF --project=${projectName} --level=${level}`,
+              `--head-ref=$GECKO_HEAD_REF --project=${projectName} --level=${level} ${cron_root}`,
           ].join(' && '),
         ],
         artifacts: {
@@ -159,7 +187,7 @@ var makeHook = async function(projectName, project, options) {
     },
   };
   // set a property that is not a valid identifier
-  newHook.task.payload.cache[`level-${level}-checkouts`] = '/home/worker/checkouts';
+  newHook.task.payload.cache[`level-${level}-checkouts-sparse-v1`] = '/home/worker/checkouts';
 
   const hooks = new taskcluster.Hooks();
 
