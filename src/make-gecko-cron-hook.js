@@ -84,7 +84,7 @@ var makeHook = async function(projectName, project, options) {
     // If there isn't a gecko_repo associated with this project, then it is itself a gecko repo
     repo_env = {
       GECKO_BASE_REPOSITORY: 'https://hg.mozilla.org/mozilla-unified',
-      GECKO_HEAD_REPOSITORY: `https://hg.mozilla.org/${path}`,
+      GECKO_HEAD_REPOSITORY: project.repo,
       GECKO_HEAD_REF: 'default',
     };
     checkout = [
@@ -98,7 +98,7 @@ var makeHook = async function(projectName, project, options) {
       GECKO_HEAD_REPOSITORY: project.gecko_repo,
       GECKO_HEAD_REF: 'default',
       COMM_BASE_REPOSITORY: 'https://hg.mozilla.org/comm-central',
-      COMM_HEAD_REPOSITORY: `https://hg.mozilla.org/${path}`,
+      COMM_HEAD_REPOSITORY: project.repo,
       COMM_HEAD_REF: 'default',
     };
     checkout = [
@@ -154,8 +154,11 @@ var makeHook = async function(projectName, project, options) {
           [
             'cd /builds/worker/checkouts/gecko',
             'ln -s /builds/worker/artifacts artifacts',
+            // Note:
+            //   --head-repository is actually the repoistory that gets passed into the decision taskk
+            //   --base-repository and --head-ref are ignored in post-esr60 branches
             './mach --log-no-times taskgraph cron --base-repository=$GECKO_BASE_REPOSITORY ' +
-            '--head-repository=$GECKO_HEAD_REPOSITORY ' +
+            `--head-repository=${project.repo} ` +
               `--head-ref=$GECKO_HEAD_REF --project=${projectName} --level=${level} ${cron_root}`,
           ].join(' && '),
         ],
@@ -170,7 +173,7 @@ var makeHook = async function(projectName, project, options) {
         owner: 'mozilla-taskcluster-maintenance@mozilla.com',
         source: `https://tools.taskcluster.net/hooks/#${hookGroupId}/${hookId}`,
         description: `See https://tools.taskcluster.net/hooks/#${hookGroupId}/${hookId}`,
-        name: `Cron task for https://hg.mozilla.org/${path}`,
+        name: `Cron task for ${project.repo}`,
       },
       priority: 'normal',
       retries: 5,
