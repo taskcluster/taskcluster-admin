@@ -85,7 +85,7 @@ module.exports.run = async function(options) {
       ]);
 
       await makeFeature('is-trunk', [
-        'queue:route:index.gecko.v2.trunk.revision.*',
+        `queue:route:index.${domain}.v2.trunk.revision.*`,
       ]);
     }
   }
