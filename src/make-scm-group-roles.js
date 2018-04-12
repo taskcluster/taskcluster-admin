@@ -21,10 +21,25 @@ module.exports.run = async (options) => {
       .map(p => projects[p]);
 
     var roleId = `mozilla-group:active_scm_level_${level}`;
-    var scopes = projectsWithGroup.map(project => {
+
+    // See https://bugzilla.mozilla.org/show_bug.cgi?id=1415868 for "old" and "new"
+    const oldScopes = projectsWithGroup.map(project => {
       let path = hgmoPath(project);
       return `assume:repo:hg.mozilla.org/${path}:*`;
     });
+    const newScopes = [
+      // actionPerms (= action name or 'generic' for generic actions) allowed to all users with this scm level
+      // NOTE that this does not include all actions! Some actions are *not* available to all users..
+      {trustDomain: 'gecko', actionPerm: 'generic'},
+      {trustDomain: 'gecko', actionPerm: 'purge-cache'},
+      {trustDomain: 'gecko', actionPerm: 'cancel-all'},
+      {trustDomain: 'comm', actionPerm: 'generic'},
+      {trustDomain: 'comm', actionPerm: 'purge-cache'},
+      {trustDomain: 'comm', actionPerm: 'cancel-all'},
+    ].map(({trustDomain, actionPerm}) =>
+      `hooks:trigger-hook:project-${trustDomain}/in-tree-action-${level}-${actionPerm}`);
+
+    const scopes = oldScopes.concat(newScopes);
 
     var description = [
       '*DO NOT EDIT*',
