@@ -1,8 +1,7 @@
 const {getProjects, hgmoPath, scmLevel} = require('./util/projects');
 const editRole = require('./util/edit-role');
+const editHook = require('./util/edit-hook');
 const chalk = require('chalk');
-const taskcluster = require('taskcluster-client');
-const {diffLines} = require('diff');
 
 module.exports.setup = (program) => {
   return program
@@ -75,9 +74,6 @@ var makeHook = async function(projectName, project, options) {
     scopes: [`assume:repo:hg.mozilla.org/${path}:cron:*`],
     noop: options.noop,
   });
-
-  // set up hook
-
 
   var repo_env, checkout;
   if (!project.gecko_repo) {
@@ -189,54 +185,10 @@ var makeHook = async function(projectName, project, options) {
   // set a property that is not a valid identifier
   newHook.task.payload.cache[`level-${level}-checkouts`] = '/builds/worker/checkouts';
 
-  const hooks = new taskcluster.Hooks();
-
-  let hook;
-  try {
-    hook = await hooks.hook(hookGroupId, hookId);
-    delete hook['hookId'];
-    delete hook['hookGroupId'];
-  } catch (err) {
-    if (err.statusCode !== 404) {
-      throw err;
-    }
-    hook = {};
-  }
-
-  // compare and display the differences
-  const diffs = diffLines(
-    JSON.stringify(hook, null, 2),
-    JSON.stringify(newHook, null, 2),
-    {newlineIsToken: true});
-  let diffsFound = false;
-  diffs.forEach(diff => {
-    if (diff.added || diff.removed) {
-      diffsFound = true;
-    }
+  await editHook({
+    noop: options.noop,
+    hookGroupId,
+    hookId,
+    ...newHook,
   });
-
-  if (diffsFound) {
-    console.log(chalk.green.bold(`changes required for hook ${hookGroupId}/${hookId}:`));
-    diffs.forEach(diff => {
-      if (diff.added) {
-        diff.value.split(/\n/).forEach(l => console.log(chalk.green('+' + l)));
-      } else if (diff.removed) {
-        diff.value.split(/\n/).forEach(l => console.log(chalk.red('-' + l)));
-      } else {
-        diff.value.split(/\n/).forEach(l => console.log(' ' + l));
-      }
-    });
-  } else {
-    console.log(chalk.green.bold(`no changes required for hook ${hookGroupId}/${hookId}`));
-  }
-
-  if (!options.noop && diffsFound) {
-    if (hook.task) {
-      console.log(chalk.green.bold('updating hook'));
-      await hooks.updateHook(hookGroupId, hookId, newHook);
-    } else {
-      console.log(chalk.green.bold('creating hook'));
-      await hooks.createHook(hookGroupId, hookId, newHook);
-    }
-  }
 };
