@@ -1,4 +1,5 @@
 const editRole = require('./util/edit-role');
+const {ACTION_HOOKS} = require('./util/action-hooks');
 
 module.exports.setup = (program) => {
   return program
@@ -6,15 +7,6 @@ module.exports.setup = (program) => {
     .option('-n, --noop', 'Don\'t change roles, just show difference')
     .description('update action-related `hooks:trigger-hook:` scopes in mozilla-group:* roles');
 };
-
-EXPECTED_PERMS = [
-  {group: 'vpn_releasemgt', actions: [
-    {trustDomain: 'gecko', level: '3', actionPerm: 'relpromo'},
-  ]},
-  {group: 'releng', actions: [
-    {trustDomain: 'gecko', level: '3', actionPerm: 'relpromo'},
-  ]},
-];
 
 module.exports.run = async function(options) {
   var taskcluster = require('taskcluster-client');
@@ -31,15 +23,12 @@ module.exports.run = async function(options) {
       continue;
     }
     const group = match[1];
-    if (group.match(/^active_scm_level_[123]/)) {
-      // managed by make-scm-group-roles
-      continue;
-    }
 
-    const expectedPerms = _.find(EXPECTED_PERMS, {group}) || {group, actions: []};
+    // find the expected actions
+    const expectedActions = ACTION_HOOKS.filter(ah => ah.groups.includes(group));
     const scopes = role.scopes
       .filter(scope => !scope.match(/^hooks:trigger-hook:project-(gecko|comm)\/in-tree-action-/))
-      .concat(expectedPerms.actions.map(({trustDomain, level, actionPerm}) =>
+      .concat(expectedActions.map(({trustDomain, level, actionPerm}) =>
         `hooks:trigger-hook:project-${trustDomain}/in-tree-action-${level}-${actionPerm}`));
 
     await editRole({

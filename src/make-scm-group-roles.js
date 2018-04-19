@@ -1,4 +1,5 @@
 const editRole = require('./util/edit-role');
+const {ACTION_HOOKS} = require('./util/action-hooks');
 const {getProjects, hgmoPath} = require('./util/projects');
 
 module.exports.setup = (program) => {
@@ -27,17 +28,10 @@ module.exports.run = async (options) => {
       let path = hgmoPath(project);
       return `assume:repo:hg.mozilla.org/${path}:*`;
     });
-    const newScopes = [
-      // actionPerms (= action name or 'generic' for generic actions) allowed to all users with this scm level
-      // NOTE that this does not include all actions! Some actions are *not* available to all users..
-      {trustDomain: 'gecko', actionPerm: 'generic'},
-      {trustDomain: 'gecko', actionPerm: 'purge-cache'},
-      {trustDomain: 'gecko', actionPerm: 'cancel-all'},
-      {trustDomain: 'comm', actionPerm: 'generic'},
-      {trustDomain: 'comm', actionPerm: 'purge-cache'},
-      {trustDomain: 'comm', actionPerm: 'cancel-all'},
-    ].map(({trustDomain, actionPerm}) =>
-      `hooks:trigger-hook:project-${trustDomain}/in-tree-action-${level}-${actionPerm}`);
+    const newScopes = ACTION_HOOKS
+      .filter(ah => ah.level === level && ah.groups.includes(`active_scm_level_${level}`))
+      .map(({trustDomain, actionPerm}) =>
+        `hooks:trigger-hook:project-${trustDomain}/in-tree-action-${level}-${actionPerm}`);
 
     const scopes = oldScopes.concat(newScopes);
 
