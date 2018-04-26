@@ -1,5 +1,6 @@
+const _ = require('lodash');
 const {getProjects, hgmoPath, scmLevel} = require('./util/projects');
-const {getCentralTaskclusterYml} = require('./util/tcyml');
+const {getTaskclusterYml} = require('./util/tcyml');
 const editRole = require('./util/edit-role');
 const editHook = require('./util/edit-hook');
 const {ACTION_HOOKS} = require('./util/action-hooks');
@@ -18,7 +19,7 @@ module.exports.run = async function(options) {
   let projects = await getProjects();
 
   // We build action hooks' task definitions from the latest in-tree `.taskcluster.yml`.
-  let taskclusterYml = await getCentralTaskclusterYml();
+  let taskclusterYml = await getTaskclusterYml(projects['mozilla-central'].repo);
 
   for (let action of ACTION_HOOKS) {
     const hookGroupId = `project-${action.trustDomain}`;
