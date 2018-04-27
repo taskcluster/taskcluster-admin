@@ -106,51 +106,77 @@ const makeHookDetails = (taskclusterYml, action) => {
     in: taskclusterYml.tasks[0],
   };
 
-  const triggerSchema = {
+  const objSchema = (attrs, properties) => Object.assign({
     type: 'object',
-    properties: {
-      decision: {
-        description: 'information provided by the decision task',
-        type: 'object',
-        properties: {
-          action: {type: 'object'},
-          push: {type: 'object'},
-          parameters: {type: 'object'},
-          repository: {type: 'object'},
-        },
-        additionalProperties: false,
-        required: [
-          'action',
-          'push',
-          'parameters',
-          'repository',
-        ],
-      },
-      user: {
-        description: 'information provided by the user, or UI',
-        type: 'object',
-        properties: {
-          input: action.inputSchema ? action.inputSchema : {type: 'object'},
-          task: {type: 'object'},
-          taskId: {type: 'string'},
-          taskGroupId: {type: 'string'},
-          ownTaskId: {type: 'string'},
-        },
-        additionalProperties: false,
-        required: [
-          'input',
-          'task',
-          'taskId',
-          'taskGroupId',
-        ],
-      },
-    },
+    properties,
     additionalProperties: false,
-    required: [
-      'decision',
-      'user',
-    ],
-  };
+    required: Object.keys(properties),
+  }, attrs);
+
+  const triggerSchema = objSchema({
+    description: [
+      'Information required to trigger this hook.  This is provided by the `hookPayload`',
+      'template in the `actions.json` file generated in-tree.',
+    ].join(' '),
+  }, {
+    decision: objSchema({
+      description: [
+        'Information provided by the decision task; this is usually baked into',
+        '`actions.json`, although any value could be supplied in a direct call to',
+        '`hooks.triggerHook`.',
+      ].join(' '),
+    }, {
+      action: objSchema({description: 'Information about the action to perform'}, {
+        name: {type: 'string', description: 'hook name'},
+        title: {type: 'string', description: 'hook title'},
+        description: {type: 'string', description: 'hook description'},
+        taskGroupId: {type: 'string', description: 'taskGroupId of the decision task'},
+        repo_scope: {type: 'string', description: '(ignored)'}, // TODO
+        cb_name: {type: 'string', description: 'name of the in-tree callback function'},
+        symbol: {type: 'string', description: 'treeherder symbol'},
+      }),
+      push: objSchema({description: 'Information about the push that created the decision task'}, {
+        owner: {type: 'string', description: 'user who made the original push'},
+        revision: {type: 'string', description: 'revision of the original push'},
+        pushlog_id: {type: 'string', description: 'Mercurial pushlog ID of the original push'},
+      }),
+      repository: objSchema({description: 'Information about the repository where the push occurred'}, {
+        url: {type: 'string', description: 'repository URL (without trailing slash)', format: '[^/]$'},
+        project: {type: 'string', description: 'repository project name (also known as "alias")'},
+        level: {type: 'string', description: 'repository SCM level'},
+      }),
+      parameters: {
+        type: 'object',
+        description: 'decision task parameters',
+        additionalProperties: true,
+      },
+    }),
+    user: objSchema({
+      description: 'Information provided by the user or user interface',
+    }, {
+      input: action.inputSchema ?
+        action.inputSchema :
+        {
+          anyOf: [
+            {type: 'object', description: 'user input for the task'},
+            {const: null, description: 'null when the action takes no input'},
+          ],
+        },
+      task: {
+        anyOf: [
+          {type: 'object', description: 'body of the task on which this action was activated'},
+          {const: null, description: 'null when the action is activated for a taskGroup'},
+        ],
+      },
+      taskId: {
+        anyOf: [
+          {type: 'string', description: 'taskId of the task on which this action was activated'},
+          {const: null, description: 'null when the action is activated for a taskGroup'},
+        ],
+      },
+      taskGroupId: {type: 'string', description: 'taskGroupId on which this action was activated'},
+    }),
+  });
 
   return {task, triggerSchema};
 };
