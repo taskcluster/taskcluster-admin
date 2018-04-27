@@ -66,33 +66,26 @@ module.exports.run = async function(options) {
 };
 
 const makeHookDetails = (taskclusterYml, action) => {
-  const repoUrlExpression = '${payload.decision.repository.url[8:]}';
-  const actionOverrides = {
-    repo_scope: {
-      $let: {
-        repoUrl: {
-          $if: 'payload.decision.repository.url[-1] == "/"',
-          then: {$eval: 'payload.decision.repository.url[:-1]'},
-          else: {$eval: 'payload.decision.repository.url'},
-        },
-      },
-      in: 'assume:repo:${repoUrl[8:]}:action:' + action.actionPerm,
-    },
-  };
-
-  if (action.actionPerm !== 'generic') {
-    // enforce that action.cb_name == actionPerm
-    actionOverrides.cb_name = action.actionPerm;
-  }
-
   const task = {
     $let: {
       tasks_for: 'action',
       action: {
-        $merge: [
-          {$eval: 'payload.decision.action'},
-          actionOverrides,
-        ],
+        name: '${payload.decision.action.name}',
+        title: '${payload.decision.action.title}',
+        description: '${payload.decision.action.description}',
+        taskGroupId: '${payload.decision.action.taskGroupId}',
+        // Calculate the repo_scope.  This is based on user input (the
+        // repository), but the hooks service checks that this is satisfied by
+        // the `hook-id:<hookGroupId>/<hookId>` role, which is set up above to
+        // only contain scopes for repositories at this level. Note that the
+        // actionPerm is *not* based on user input, but is fixed in the
+        // hookPayload template
+        repo_scope: 'assume:repo:${payload.decision.repository.url[8:]}:action:' + action.actionPerm,
+        // cb_name is user-specified for generic actions, but not for those with their own actionPerm
+        cb_name: action.actionPerm === 'generic' ?
+          '${payload.decision.action.cb_name}' :
+          action.actionPerm,
+        symbol: '${payload.decision.action.symbol}',
       },
       push: {$eval: 'payload.decision.push'},
       repository: {$eval: 'payload.decision.repository'},
@@ -141,7 +134,7 @@ const makeHookDetails = (taskclusterYml, action) => {
         pushlog_id: {type: 'string', description: 'Mercurial pushlog ID of the original push'},
       }),
       repository: objSchema({description: 'Information about the repository where the push occurred'}, {
-        url: {type: 'string', description: 'repository URL (without trailing slash)', format: '[^/]$'},
+        url: {type: 'string', description: 'repository URL (without trailing slash)', pattern: '[^/]$'},
         project: {type: 'string', description: 'repository project name (also known as "alias")'},
         level: {type: 'string', description: 'repository SCM level'},
       }),
