@@ -154,12 +154,6 @@ const makeHookDetails = (taskclusterYml, action) => {
             {const: null, description: 'null when the action takes no input'},
           ],
         },
-      task: {
-        anyOf: [
-          {type: 'object', description: 'body of the task on which this action was activated'},
-          {const: null, description: 'null when the action is activated for a taskGroup'},
-        ],
-      },
       taskId: {
         anyOf: [
           {type: 'string', description: 'taskId of the task on which this action was activated'},
