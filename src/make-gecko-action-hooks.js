@@ -124,7 +124,6 @@ const makeHookDetails = (taskclusterYml, action) => {
         title: {type: 'string', description: 'hook title'},
         description: {type: 'string', description: 'hook description'},
         taskGroupId: {type: 'string', description: 'taskGroupId of the decision task'},
-        repo_scope: {type: 'string', description: '(ignored)'}, // TODO
         cb_name: {type: 'string', description: 'name of the in-tree callback function'},
         symbol: {type: 'string', description: 'treeherder symbol'},
       }),
