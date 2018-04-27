@@ -1,6 +1,7 @@
 const chalk = require('chalk');
 const taskcluster = require('taskcluster-client');
 const {diffLines} = require('diff');
+const {showDiff} = require('./show-diff');
 const yaml = require('js-yaml');
 
 const editHook = async ({hookGroupId, hookId, metadata, schedule, task, triggerSchema, noop}) => {
@@ -27,8 +28,7 @@ const editHook = async ({hookGroupId, hookId, metadata, schedule, task, triggerS
 
   const diffs = diffLines(
     yaml.safeDump(hook, {sortKeys: true, flowLevel: -1}),
-    yaml.safeDump(newHook, {sortKeys: true, flowLevel: -1}),
-    {newlineIsToken: true});
+    yaml.safeDump(newHook, {sortKeys: true, flowLevel: -1}));
   let diffsFound = false;
   diffs.forEach(diff => {
     if (diff.added || diff.removed) {
@@ -38,15 +38,7 @@ const editHook = async ({hookGroupId, hookId, metadata, schedule, task, triggerS
 
   if (diffsFound) {
     console.log(chalk.green.bold(`changes required for hook ${hookGroupId}/${hookId}:`));
-    diffs.forEach(diff => {
-      if (diff.added) {
-        diff.value.split(/\n/).forEach(l => console.log(chalk.green('+' + l)));
-      } else if (diff.removed) {
-        diff.value.split(/\n/).forEach(l => console.log(chalk.red('-' + l)));
-      } else {
-        diff.value.split(/\n/).forEach(l => console.log(' ' + l));
-      }
-    });
+    showDiff({diffs, context: 8});
   } else {
     console.log(chalk.green.bold(`no changes required for hook ${hookGroupId}/${hookId}`));
   }
