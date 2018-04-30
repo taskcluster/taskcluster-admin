@@ -19,12 +19,16 @@ module.exports.run = async function(options) {
   let projects = await getProjects();
 
   // We build action hooks' task definitions from the latest in-tree `.taskcluster.yml`.
-  let taskclusterYml = await getTaskclusterYml(projects['mozilla-central'].repo);
+  const taskclusterYml = {
+    'mozilla-central': await getTaskclusterYml(projects['mozilla-central'].repo),
+    'comm-central': await getTaskclusterYml(projects['comm-central'].repo),
+  };
 
   for (let action of ACTION_HOOKS) {
     const hookGroupId = `project-${action.trustDomain}`;
     const hookId = `in-tree-action-${action.level}-${action.actionPerm}`;
-    const {task, triggerSchema} = makeHookDetails(taskclusterYml, action);
+    const projName = action.trustDomain === 'gecko' ? 'mozilla-central' : 'comm-central';
+    const {task, triggerSchema} = makeHookDetails(taskclusterYml[projName], action);
     await editHook({
       noop: options.noop,
       hookGroupId,
