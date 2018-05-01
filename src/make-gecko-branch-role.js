@@ -51,8 +51,11 @@ module.exports.run = async function(projectsOption, options) {
       process.exit(1);
     }
 
-    var roleId = `repo:hg.mozilla.org/${path}:*`;
-    var scopes = [
+    var roleId, scopes, description;
+
+    // repo:* role
+    roleId = `repo:hg.mozilla.org/${path}:*`;
+    scopes = [
       `assume:${roleRoot}:branch:${domain}:level-${level}:${projectName}`,
     ];
 
@@ -66,7 +69,27 @@ module.exports.run = async function(projectsOption, options) {
       scopes.push(scope);
     }
 
-    var description = [
+    description = [
+      '*DO NOT EDIT*',
+      '',
+      `Scopes for all tasks (cron, action, push) related to https://hg.mozilla.org/${path}`,
+      '',
+      'This role is configured automatically by [taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).',
+    ].join('\n');
+
+    await editRole({
+      roleId,
+      description,
+      scopes,
+      noop: options.noop,
+    });
+
+    // repo:branch:default role
+    roleId = `repo:hg.mozilla.org/${path}:branch:default`;
+    scopes = [
+      `assume:${roleRoot}:push:${domain}:level-${level}:${projectName}`,
+    ];
+    description = [
       '*DO NOT EDIT*',
       '',
       `Scopes for tasks triggered from pushes to https://hg.mozilla.org/${path}`,
@@ -92,7 +115,7 @@ module.exports.run = async function(projectsOption, options) {
       description = [
         '*DO NOT EDIT*',
         '',
-        `Scopes for nighlty cron tasks triggered from pushes to https://hg.mozilla.org/${path}`,
+        `Scopes for nightly cron tasks triggered from pushes to https://hg.mozilla.org/${path}`,
         '',
         'This role is configured automatically by ',
         '[taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).',

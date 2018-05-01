@@ -33,7 +33,7 @@ module.exports.run = async function(options) {
       await editRole({
         roleId: `${roleRoot}:branch:${domain}:level-${level}:*`,
         description: description(
-          `Scopes for ${domain} projects at level ${level}; the '*' matches the project name.`
+          `Scopes for tasks associated with all ${domain} projects at level ${level}; the '*' matches the project name.`
         ),
         scopes: [
           `assume:moz-tree:level:${level}:${domain}`,
@@ -50,6 +50,18 @@ module.exports.run = async function(options) {
           'queue:route:index.releases.v1.<..>.*',
           'index:insert-task:releases.v1.<..>.*',
           `secrets:get:project/releng/${domain}/build/level-${level}/*`,
+        ],
+        noop: options.noop,
+      });
+
+      await editRole({
+        roleId: `${roleRoot}:push:${domain}:level-${level}:*`,
+        description: description(
+          `Scopes for tasks associated with pushes to ${domain} projects at level ${level};
+          the '*' matches the project name.`
+        ),
+        scopes: [
+          `in-tree:hook-action:project-${domain}/in-tree-action-${level}-*`,
         ],
         noop: options.noop,
       });
