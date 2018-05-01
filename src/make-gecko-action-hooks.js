@@ -95,7 +95,6 @@ const makeHookDetails = (taskclusterYml, action) => {
       repository: {$eval: 'payload.decision.repository'},
       input: {$eval: 'payload.user.input'},
       parameters: {$eval: 'payload.decision.parameters'},
-      task: {$eval: 'payload.user.task'},
       taskId: {$eval: 'payload.user.taskId'},
       taskGroupId: {$eval: 'payload.user.taskGroupId'},
       // the hooks service provides the value of the new taskId
