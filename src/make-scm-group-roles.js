@@ -23,17 +23,13 @@ module.exports.run = async (options) => {
 
     var roleId = `mozilla-group:active_scm_level_${level}`;
 
-    // See https://bugzilla.mozilla.org/show_bug.cgi?id=1415868 for "old" and "new"
-    const oldScopes = projectsWithGroup.map(project => {
+    const scopes = projectsWithGroup.map(project => {
       let path = hgmoPath(project);
       return `assume:repo:hg.mozilla.org/${path}:*`;
-    });
-    const newScopes = ACTION_HOOKS
-      .filter(ah => ah.level === level && ah.groups.includes(`active_scm_level_${level}`))
-      .map(({trustDomain, actionPerm}) =>
-        `hooks:trigger-hook:project-${trustDomain}/in-tree-action-${level}-${actionPerm}_*`);
-
-    const scopes = oldScopes.concat(newScopes);
+    }).concat([
+      `assume:project-gecko:in-tree-action-trigger:active_scm_level_${level}`,
+      `assume:project-comm:in-tree-action-trigger:active_scm_level_${level}`,
+    ]);
 
     var description = [
       '*DO NOT EDIT*',
