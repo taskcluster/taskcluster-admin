@@ -9,7 +9,7 @@ const editProvisionerWorkerType = async ({workerType, original, updated, noop}) 
 
   var diffs = diffJson(original, updated);
   if (_.find(diffs, {added: true}) || _.find(diffs, {removed: true})) {
-    console.log(chalk.green.bold(`changes required for workerType ${workerType}:`));
+    console.log(chalk.green.bold(`changes required for workerType ${workerType}`) + ':');
     showDiff({diffs, context: 8});
   } else {
     console.log(chalk.green.bold(`no changes required for workerType ${workerType}`));
