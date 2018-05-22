@@ -29,7 +29,7 @@ module.exports.run = async function(options) {
     const scopes = role.scopes
       .filter(scope => !scope.match(/^hooks:trigger-hook:project-(gecko|comm)\/in-tree-action-/))
       .concat(expectedActions.map(({trustDomain, level, actionPerm}) =>
-        `hooks:trigger-hook:project-${trustDomain}/in-tree-action-${level}-${actionPerm}`));
+        `hooks:trigger-hook:project-${trustDomain}/in-tree-action-${level}-${actionPerm}_*`));
 
     await editRole({
       roleId: role.roleId,

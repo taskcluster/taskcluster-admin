@@ -1,10 +1,13 @@
+const request = require('superagent');
+const yaml = require('js-yaml');
 const _ = require('lodash');
+const crypto = require('crypto');
 const {getProjects, hgmoPath, scmLevel} = require('./util/projects');
-const {getTaskclusterYml} = require('./util/tcyml');
 const editRole = require('./util/edit-role');
 const editHook = require('./util/edit-hook');
 const {ACTION_HOOKS} = require('./util/action-hooks');
 const chalk = require('chalk');
+const taskcluster = require('taskcluster-client');
 
 module.exports.setup = (program) => {
   return program
@@ -14,59 +17,92 @@ module.exports.setup = (program) => {
 };
 
 module.exports.run = async function(options) {
-  let taskcluster = require('taskcluster-client');
-  let chalk = require('chalk');
   let projects = await getProjects();
 
-  // We build action hooks' task definitions from the latest in-tree `.taskcluster.yml`.
-  const taskclusterYml = {
-    'mozilla-central': await getTaskclusterYml(projects['mozilla-central'].repo),
-    'comm-central': await getTaskclusterYml(projects['comm-central'].repo),
-  };
+  const taskclusterYmls = await hashTaskclusterYmls(projects);
 
-  for (let action of ACTION_HOOKS) {
-    const hookGroupId = `project-${action.trustDomain}`;
-    const hookId = `in-tree-action-${action.level}-${action.actionPerm}`;
-    const projName = action.trustDomain === 'gecko' ? 'mozilla-central' : 'comm-central';
-    const {task, triggerSchema} = makeHookDetails(taskclusterYml[projName], action);
-    await editHook({
-      noop: options.noop,
-      hookGroupId,
-      hookId,
-      metadata: {
-        name: `Action task ${action.level}-${action.actionPerm}`,
+  for (let {taskclusterYmlHash, taskclusterYml} of taskclusterYmls) {
+    for (let action of ACTION_HOOKS) {
+      const hookGroupId = `project-${action.trustDomain}`;
+      const hookId = `in-tree-action-${action.level}-${action.actionPerm}_${taskclusterYmlHash}`;
+      const {task, triggerSchema} = makeHookDetails(taskclusterYml, action);
+      await editHook({
+        noop: options.noop,
+        hookGroupId,
+        hookId,
+        metadata: {
+          name: [
+            `Action task ${action.level}-${action.actionPerm}, with \`.taskcluster.yml\``,
+            `hash ${taskclusterYmlHash}`,
+          ].join(' '),
+          description: [
+            '*DO NOT EDIT*',
+            '',
+            'This hook is configured automatically by',
+            '[taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).',
+          ].join('\n'),
+          owner: 'taskcluster-notifications@mozilla.com',
+          emailOnError: false, // true, TODO
+        },
+        schedule: [],
+        task,
+        triggerSchema,
+      });
+
+      // make the role with scopes assume:repo:<repo>:action:<actionPerm> for each repo at this level
+      const projectsAtLevel = Object.keys(projects)
+        .filter(p => projects[p].access === `scm_level_${action.level}`)
+        .map(p => projects[p]);
+      const scopes = projectsAtLevel.map(
+        project => `assume:repo:hg.mozilla.org/${hgmoPath(project)}:action:${action.actionPerm}`);
+      await editRole({
+        roleId: `hook-id:${hookGroupId}/${hookId}`,
         description: [
           '*DO NOT EDIT*',
           '',
-          'This hook is configured automatically by',
+          'This role is configured automatically by',
           '[taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).',
         ].join('\n'),
-        owner: 'taskcluster-notifications@mozilla.com',
-        emailOnError: false, // true, TODO
-      },
-      schedule: [],
-      task,
-      triggerSchema,
-    });
-
-    // make the role with scopes assume:repo:<repo>:action:<actionPerm> for each repo at this level
-    const projectsAtLevel = Object.keys(projects)
-      .filter(p => projects[p].access === `scm_level_${action.level}`)
-      .map(p => projects[p]);
-    const scopes = projectsAtLevel.map(
-      project => `assume:repo:hg.mozilla.org/${hgmoPath(project)}:action:${action.actionPerm}`);
-    await editRole({
-      roleId: `hook-id:${hookGroupId}/${hookId}`,
-      description: [
-        '*DO NOT EDIT*',
-        '',
-        'This role is configured automatically by',
-        '[taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).',
-      ].join('\n'),
-      scopes,
-      noop: options.noop,
-    });
+        scopes,
+        noop: options.noop,
+      });
+    }
   }
+};
+
+const hashTaskclusterYmls = async (projects) => {
+  console.log(chalk.yellow.bold('fetching and hashing `.taskcluster.yml` files from all repos'));
+
+  const result = {};
+  await Promise.all(Object.entries(projects).map(async ([alias, {repo, features}]) => {
+    // try repos don't have a `default` so there's nothing to do
+    if (alias.startsWith('try') || alias.endsWith('try')) {
+      return;
+    }
+
+    let taskclusterYml;
+    try {
+      const res = await request.get(`${repo}/raw-file/default/.taskcluster.yml`).buffer(true);
+      taskclusterYml = res.text;
+    } catch (err) {
+      // if no .taskcluster.yml exists, skip it..
+      if (err.status === 404) {
+        return;
+      }
+    }
+
+    const taskclusterYmlHash = crypto
+      .createHash('sha256')
+      .update(taskclusterYml)
+      .digest('hex')
+      .slice(0, 10);
+
+    result[taskclusterYmlHash] = yaml.safeLoad(taskclusterYml);
+  }));
+
+  return Object
+    .entries(result)
+    .map(([taskclusterYmlHash, taskclusterYml]) => ({taskclusterYmlHash, taskclusterYml}));
 };
 
 const makeHookDetails = (taskclusterYml, action) => {

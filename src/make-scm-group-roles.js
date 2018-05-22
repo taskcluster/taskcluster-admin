@@ -31,7 +31,7 @@ module.exports.run = async (options) => {
     const newScopes = ACTION_HOOKS
       .filter(ah => ah.level === level && ah.groups.includes(`active_scm_level_${level}`))
       .map(({trustDomain, actionPerm}) =>
-        `hooks:trigger-hook:project-${trustDomain}/in-tree-action-${level}-${actionPerm}`);
+        `hooks:trigger-hook:project-${trustDomain}/in-tree-action-${level}-${actionPerm}_*`);
 
     const scopes = oldScopes.concat(newScopes);
 
