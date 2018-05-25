@@ -17,7 +17,7 @@ const editRole = async ({roleId, description, scopes, noop}) => {
   var got_scopes = role ? role.scopes : [];
   var diff = arrayDiff(got_scopes, scopes);
   if (diff.removed.length || diff.added.length) {
-    console.log(chalk.green.bold(`scope changes required for role ${roleId}:`));
+    console.log(chalk.green.bold(`scope changes required for role ${roleId}`) + ':');
     diff.removed.forEach(s => console.log(chalk.red(`- ${s}`)));
     diff.added.forEach(s => console.log(chalk.green(`+ ${s}`)));
   } else {

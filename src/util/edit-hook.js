@@ -37,7 +37,7 @@ const editHook = async ({hookGroupId, hookId, metadata, schedule, task, triggerS
   });
 
   if (diffsFound) {
-    console.log(chalk.green.bold(`changes required for hook ${hookGroupId}/${hookId}:`));
+    console.log(chalk.green.bold(`changes required for hook ${hookGroupId}/${hookId}`) + ':');
     showDiff({diffs, context: 8});
   } else {
     console.log(chalk.green.bold(`no changes required for hook ${hookGroupId}/${hookId}`));
