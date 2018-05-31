@@ -69,6 +69,30 @@ module.exports.run = async function(options) {
       noop: options.noop,
     });
   }
+
+  // ensure that the necessary people have acces to trigger these hooks
+  const roles = {};
+  for (action of ACTION_HOOKS) {
+    const hookGroupId = `project-${action.trustDomain}`;
+    const hookId = `in-tree-action-${action.level}-${action.actionPerm}/*`; // any hash
+    const scope = `hooks:trigger-hook:${hookGroupId}/${hookId}`;
+    for (let group of action.groups) {
+      const roleId = `project-${action.trustDomain}:in-tree-action-trigger:${group}`;
+      if (!roles[roleId]) {
+        roles[roleId] = [];
+      }
+      roles[roleId].push(scope);
+    }
+  }
+
+  for (let roleId of _.keys(roles)) {
+    await editRole({
+      roleId,
+      description: 'Action-task hooks that matching users are allowed to trigger',
+      scopes: roles[roleId],
+      noop: options.noop,
+    });
+  }
 };
 
 const hashTaskclusterYmls = async (projects) => {
