@@ -21,10 +21,10 @@ module.exports.run = async function(options) {
 
   const taskclusterYmls = await hashTaskclusterYmls(projects);
 
-  for (let {taskclusterYmlHash, taskclusterYml} of taskclusterYmls) {
-    for (let action of ACTION_HOOKS) {
+  for (let action of ACTION_HOOKS) {
+    for (let {taskclusterYmlHash, taskclusterYml} of taskclusterYmls) {
       const hookGroupId = `project-${action.trustDomain}`;
-      const hookId = `in-tree-action-${action.level}-${action.actionPerm}_${taskclusterYmlHash}`;
+      const hookId = `in-tree-action-${action.level}-${action.actionPerm}/${taskclusterYmlHash}`;
       const {task, triggerSchema} = makeHookDetails(taskclusterYml, action);
       await editHook({
         noop: options.noop,
@@ -42,31 +42,32 @@ module.exports.run = async function(options) {
             '[taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).',
           ].join('\n'),
           owner: 'taskcluster-notifications@mozilla.com',
-          emailOnError: false, // true, TODO
+          emailOnError: true,
         },
         schedule: [],
         task,
         triggerSchema,
       });
-
-      // make the role with scopes assume:repo:<repo>:action:<actionPerm> for each repo at this level
-      const projectsAtLevel = Object.keys(projects)
-        .filter(p => projects[p].access === `scm_level_${action.level}`)
-        .map(p => projects[p]);
-      const scopes = projectsAtLevel.map(
-        project => `assume:repo:hg.mozilla.org/${hgmoPath(project)}:action:${action.actionPerm}`);
-      await editRole({
-        roleId: `hook-id:${hookGroupId}/${hookId}`,
-        description: [
-          '*DO NOT EDIT*',
-          '',
-          'This role is configured automatically by',
-          '[taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).',
-        ].join('\n'),
-        scopes,
-        noop: options.noop,
-      });
     }
+
+    // make the role with scopes assume:repo:<repo>:action:<actionPerm> for each repo at this level
+    const projectsAtLevel = Object.keys(projects)
+      .filter(p => projects[p].access === `scm_level_${action.level}`)
+      .map(p => projects[p]);
+    const scopes = projectsAtLevel.map(
+      project => `assume:repo:hg.mozilla.org/${hgmoPath(project)}:action:${action.actionPerm}`);
+    const roleId = `hook-id:project-${action.trustDomain}/in-tree-action-${action.level}-${action.actionPerm}/*`;
+    await editRole({
+      roleId,
+      description: [
+        '*DO NOT EDIT*',
+        '',
+        'This role is configured automatically by',
+        '[taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).',
+      ].join('\n'),
+      scopes,
+      noop: options.noop,
+    });
   }
 };
 
@@ -97,7 +98,12 @@ const hashTaskclusterYmls = async (projects) => {
       .digest('hex')
       .slice(0, 10);
 
-    result[taskclusterYmlHash] = yaml.safeLoad(taskclusterYml);
+    const parsed = yaml.safeLoad(taskclusterYml);
+    if (!parsed.tasks[0]) {
+      // old template with tasks: {$let: ..}
+      return;
+    }
+    result[taskclusterYmlHash] = parsed;
   }));
 
   return Object
