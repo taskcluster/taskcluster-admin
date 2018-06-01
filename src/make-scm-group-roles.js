@@ -27,8 +27,8 @@ module.exports.run = async (options) => {
       let path = hgmoPath(project);
       return `assume:repo:hg.mozilla.org/${path}:*`;
     }).concat([
-      `assume:project-gecko:in-tree-action-trigger:active_scm_level_${level}`,
-      `assume:project-comm:in-tree-action-trigger:active_scm_level_${level}`,
+      `assume:project:gecko:in-tree-action-trigger:active_scm_level_${level}`,
+      `assume:project:comm:in-tree-action-trigger:active_scm_level_${level}`,
     ]);
 
     var description = [

@@ -77,7 +77,7 @@ module.exports.run = async function(options) {
     const hookId = `in-tree-action-${action.level}-${action.actionPerm}/*`; // any hash
     const scope = `hooks:trigger-hook:${hookGroupId}/${hookId}`;
     for (let group of action.groups) {
-      const roleId = `project-${action.trustDomain}:in-tree-action-trigger:${group}`;
+      const roleId = `project:${action.trustDomain}:in-tree-action-trigger:${group}`;
       if (!roles[roleId]) {
         roles[roleId] = [];
       }
