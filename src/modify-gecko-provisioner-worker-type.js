@@ -1,6 +1,5 @@
 const editProvisionerWorkerType = require('./util/edit-provisioner-worker-type');
 const _ = require('lodash');
-const {getProjects, hgmoPath, scmLevel, feature} = require('./util/projects');
 
 const collect = (val, memo) => { memo.push(val); return memo; };
 module.exports.setup = (program) => {

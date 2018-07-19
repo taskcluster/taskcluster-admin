@@ -1,5 +1,4 @@
 const editRole = require('./util/edit-role');
-const {getProjects, hgmoPath, scmLevel, feature} = require('./util/projects');
 
 module.exports.setup = (program) => {
   return program
