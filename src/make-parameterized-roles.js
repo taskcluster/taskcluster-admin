@@ -23,6 +23,7 @@ module.exports.run = async function(options) {
     scopes: [
       'assume:hook-id:project-<..>/*',
       'assume:project:<..>:*',
+      'assume:worker-type:proj-<..>/*',
       'auth:create-client:project/<..>/*',
       'auth:create-role:hook-id:project-<..>/*',
       'auth:create-role:project:<..>:*',
