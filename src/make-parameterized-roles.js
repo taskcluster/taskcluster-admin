@@ -56,5 +56,15 @@ module.exports.run = async function(options) {
     ],
     noop: options.noop,
   });
+
+  await editRole({
+    roleId: 'worker-type:*',
+    description: description(
+      'An worker-type can claim work for its own queue'),
+    scopes: [
+      'queue:claim-work:<..>',
+    ],
+    noop: options.noop,
+  });
 };
 
